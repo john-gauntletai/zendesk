@@ -1,0 +1,159 @@
+import { create } from 'zustand';
+import { toast } from 'react-hot-toast';
+import supabase from './supabase';
+import { User, Conversation, Message, Customer, CreateMessagePayload } from './types';
+
+interface SessionState {
+  session: User | null;
+  fetchSession: () => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+interface CustomerState {
+  customers: Customer[];
+  fetchCustomers: () => Promise<void>;
+  selectedCustomerId: string | null;
+  setSelectedCustomerId: (customerId: string | null) => void;
+}
+
+interface ConversationState {
+  conversations: Conversation[];
+  fetchConversations: () => Promise<void>;
+  fetchConversationById: (conversationId: string) => Promise<void>;
+  selectedConversationId: string | null;
+  setSelectedConversationId: (conversationId: string | null) => void;
+  addConversation: (conversation: Conversation) => void;
+  updateConversationStatus: (conversationId: string, status: string) => Promise<void>;
+}
+
+interface MessageState {
+  messages: Message[];
+  fetchMessagesByConversationId: (conversationId: string) => Promise<Message[]>;
+  createMessage: (message: CreateMessagePayload) => Promise<void>;
+  addMessage: (message: Message) => void;
+}
+
+export const useSessionStore = create<SessionState>((set) => ({
+  session: null,
+  fetchSession: async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.session?.user.id)
+        .single();
+
+      if (error || userError) {
+        throw new Error('Failed to fetch session');
+      }
+      set({ session: userData });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to fetch session');
+    }
+  },
+  logout: async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error(error);
+    } else {
+      set({ session: null });
+      window.location.href = '/';
+    }
+  },
+}));
+
+export const useCustomerStore = create<CustomerState>((set) => ({
+  customers: [],
+  fetchCustomers: async () => {
+    const { data, error } = await supabase.from('customers').select('*');
+    if (error) {
+      console.error(error);
+    } else {
+      set({ customers: data || [] });
+    }
+  },
+  selectedCustomerId: null,
+  setSelectedCustomerId: (customerId) => set({ selectedCustomerId: customerId }),
+}));
+
+export const useConversationStore = create<ConversationState>((set) => ({
+  conversations: [],
+  fetchConversations: async () => {
+    const { data, error } = await supabase.from('conversations').select('*');
+    if (error) {
+      console.error(error);
+    } else {
+      set({ conversations: data || [] });
+    }
+  },
+  fetchConversationById: async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+    if (error) {
+      console.error(error);
+    } else {
+      set({ selectedConversation: data });
+    }
+  },
+  selectedConversationId: null,
+  setSelectedConversationId: (conversationId) => set({ selectedConversationId: conversationId }),
+  addConversation: (conversation: Conversation) => 
+    set(state => ({
+      conversations: [...state.conversations, conversation]
+    })),
+  updateConversationStatus: async (conversationId: string, status: string) => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .update({ status })
+      .eq('id', conversationId);
+    
+    if (error) {
+      console.error(error);
+      toast.error('Failed to update conversation status');
+    } else {
+      set(state => ({
+        conversations: state.conversations.map(conv => 
+          conv.id === conversationId ? { ...conv, status } : conv
+        ),
+        selectedConversation: state.selectedConversation?.id === conversationId 
+          ? { ...state.selectedConversation, status }
+          : state.selectedConversation
+      }));
+      toast.success(`Conversation ${status}`);
+    }
+  },
+}));
+
+export const useMessageStore = create<MessageState>((set, get) => ({
+  messages: [],
+  fetchMessagesByConversationId: async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId);
+    if (error) {
+      console.error(error);
+      toast.error('Failed to fetch messages');
+      return [];
+    } else {
+      set({ messages: [...get().messages, ...data] });
+      return data;
+    }
+  },
+  createMessage: async (message: CreateMessagePayload) => {
+    const { data, error } = await supabase.from('messages').insert(message);
+    if (error) {
+      console.error(error);
+      toast.error('Failed to create message');
+    }
+  },
+  addMessage: (message: Message) => 
+    set(state => ({
+      messages: [...state.messages, message]
+    })),
+}));  

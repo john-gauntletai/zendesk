@@ -50,7 +50,7 @@ const LandingPage = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-              <Link to="/signin" className="btn btn-primary btn-lg">
+              <Link to="/login" className="btn btn-primary btn-lg">
                 Get Started
               </Link>
               <Link to="/demo" className="btn btn-ghost btn-lg">
