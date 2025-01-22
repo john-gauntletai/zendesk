@@ -51,7 +51,6 @@ export const useSessionStore = create<SessionState>((set) => ({
       set({ session: userData });
     } catch (error) {
       console.error(error);
-      toast.error('Failed to fetch session');
     }
   },
   logout: async () => {
