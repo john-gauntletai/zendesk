@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import classNames from 'classnames';
 import supabase from '../../supabase';
 import { Customer } from '../../types';
 import avengersLogo from '../../assets/avengers-logo.png';

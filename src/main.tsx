@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
 import SignIn from './components/SignIn.tsx';
@@ -14,7 +14,8 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/login" element={<SignIn />} />
         <Route path="/avengers" element={<AvengersHotline />} />
-        <Route path="*" element={<App/>} />
+        <Route path="/" element={<App/>} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
