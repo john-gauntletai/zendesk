@@ -39,23 +39,23 @@ const InsightsPanel = ({ selectedCustomer, selectedConversation, onClose }: Insi
       <div className="bg-base-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-base-content/70 mb-3">Customer Information</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div className="overflow-hidden">
             <label className="text-xs text-base-content/50">Full Name</label>
-            <p className="font-medium">{selectedCustomer?.full_name}</p>
+            <p className="font-medium truncate">{selectedCustomer?.full_name}</p>
           </div>
-          <div>
+          <div className="overflow-hidden">
             <label className="text-xs text-base-content/50">Email</label>
-            <p className="font-medium">{selectedCustomer?.email}</p>
+            <p className="font-medium truncate">{selectedCustomer?.email}</p>
           </div>
-          <div>
+          <div className="overflow-hidden">
             <label className="text-xs text-base-content/50">Customer Since</label>
-            <p className="font-medium">
+            <p className="font-medium truncate">
               {new Date(selectedCustomer?.created_at || '').toLocaleDateString()}
             </p>
           </div>
-          <div>
+          <div className="overflow-hidden">
             <label className="text-xs text-base-content/50">Total Conversations</label>
-            <p className="font-medium">{selectedCustomer?.conversations?.length || 0}</p>
+            <p className="font-medium truncate">{selectedCustomer?.conversations?.length || 0}</p>
           </div>
         </div>
       </div>
@@ -66,9 +66,9 @@ const InsightsPanel = ({ selectedCustomer, selectedConversation, onClose }: Insi
           <h3 className="text-sm font-medium text-base-content/70 mb-3">Current Conversation</h3>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm">Case #{selectedConversation.id.slice(-4)}</span>
+              <span className="text-sm truncate flex-1">Case #{selectedConversation.id.slice(-4)}</span>
               <span className={classNames(
-                "badge badge-sm",
+                "badge badge-sm shrink-0 ml-2",
                 {
                   'badge-info': selectedConversation.status === 'new',
                   'badge-success': selectedConversation.status === 'open',
@@ -78,9 +78,9 @@ const InsightsPanel = ({ selectedCustomer, selectedConversation, onClose }: Insi
                 {selectedConversation.status}
               </span>
             </div>
-            <div>
+            <div className="overflow-hidden">
               <label className="text-xs text-base-content/50">Started</label>
-              <p className="text-sm">
+              <p className="text-sm truncate">
                 {new Date(selectedConversation.created_at).toLocaleString()}
               </p>
             </div>
@@ -93,16 +93,16 @@ const InsightsPanel = ({ selectedCustomer, selectedConversation, onClose }: Insi
         <h3 className="text-sm font-medium text-base-content/70 mb-3">Activity Summary</h3>
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm">
-            <span>Average Response Time</span>
-            <span className="font-medium">~2.5 minutes</span>
+            <span className="truncate flex-1">Average Response Time</span>
+            <span className="font-medium shrink-0 ml-2">~2.5 minutes</span>
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span>Satisfaction Score</span>
-            <span className="font-medium">4.8/5.0</span>
+            <span className="truncate flex-1">Satisfaction Score</span>
+            <span className="font-medium shrink-0 ml-2">4.8/5.0</span>
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span>Common Topics</span>
-            <span className="font-medium">Support, Billing</span>
+            <span className="truncate flex-1">Common Topics</span>
+            <span className="font-medium shrink-0 ml-2">Support, Billing</span>
           </div>
         </div>
       </div>
