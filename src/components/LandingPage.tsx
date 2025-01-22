@@ -53,8 +53,8 @@ const LandingPage = () => {
               <Link to="/login" className="btn btn-primary btn-lg">
                 Get Started
               </Link>
-              <Link to="/demo" className="btn btn-ghost btn-lg">
-                View Demo
+              <Link to="/avengers" className="btn btn-ghost btn-lg">
+                Go to Avengers Hotline
               </Link>
             </div>
 
