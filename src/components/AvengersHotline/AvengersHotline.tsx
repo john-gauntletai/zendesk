@@ -46,12 +46,7 @@ const AvengersHotline = () => {
   }, [userInfo]);
 
   useEffect(() => {
-    if (customer?.conversations) {
-      // Get all conversation IDs for this customer
-      const conversationIds = customer.conversations.map(conv => conv.id);
-      
-      if (conversationIds.length === 0) return;
-
+    if (customer) {
       // Subscribe to new messages for all conversations
       const messagesSubscription = supabase
         .channel('customer-messages')
@@ -61,7 +56,7 @@ const AvengersHotline = () => {
             event: 'INSERT',
             schema: 'public',
             table: 'messages',
-            filter: `conversation_id=in.(${conversationIds.join(',')})`
+            filter: `conversation_id=in.(${customer.conversations?.map(conv => conv.id).join(',') || ''})`
           },
           async (payload) => {
             const newMessage = payload.new;
@@ -87,9 +82,46 @@ const AvengersHotline = () => {
         )
         .subscribe();
 
-      // Cleanup subscription
+      // Subscribe to new conversations for this customer
+      const conversationsSubscription = supabase
+        .channel('customer-conversations')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'conversations',
+            filter: `customer_id=eq.${customer.id}`
+          },
+          async (payload) => {
+            const newConversation = payload.new;
+            
+            // Fetch messages for the new conversation
+            const { data: messages } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', newConversation.id);
+            
+            // Update customer state with new conversation
+            setCustomer(prevCustomer => {
+              if (!prevCustomer) return null;
+              
+              return {
+                ...prevCustomer,
+                conversations: [
+                  ...(prevCustomer.conversations || []),
+                  { ...newConversation, messages: messages || [] }
+                ]
+              };
+            });
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions
       return () => {
         messagesSubscription.unsubscribe();
+        conversationsSubscription.unsubscribe();
       };
     }
   }, [customer]);

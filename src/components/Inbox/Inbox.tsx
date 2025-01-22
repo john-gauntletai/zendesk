@@ -88,7 +88,7 @@ const Inbox = () => {
         customersSubscription.unsubscribe();
       };
     }
-  }, [selectedCustomerId]);
+  }, [selectedCustomerId, conversations]);
 
   const handleClickCustomer = async (customerId: string) => {
     setSelectedConversationId(null);
