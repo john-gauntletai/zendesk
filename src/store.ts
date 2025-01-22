@@ -4,6 +4,7 @@ import supabase from './supabase';
 import { User, Conversation, Message, Customer, CreateMessagePayload } from './types';
 
 interface SessionState {
+  isLoading: boolean;
   session: User | null;
   fetchSession: () => Promise<void>;
   logout: () => Promise<void>;
@@ -35,6 +36,7 @@ interface MessageState {
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
+  isLoading: true,
   session: null,
   fetchSession: async () => {
     try {
@@ -51,6 +53,8 @@ export const useSessionStore = create<SessionState>((set) => ({
       set({ session: userData });
     } catch (error) {
       console.error(error);
+    } finally {
+      set({ isLoading: false });
     }
   },
   logout: async () => {

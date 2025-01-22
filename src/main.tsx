@@ -11,8 +11,6 @@ import NotFound from './components/NotFound.tsx';
 import AvengersHotline from './components/AvengersHotline/AvengersHotline.tsx';
 import App from './App.tsx';
 
-console.log(import.meta.env.VITE_SUPABASE_REDIRECT_URL);
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Toaster position="bottom-left" toastOptions={{ duration: 4000 }} />

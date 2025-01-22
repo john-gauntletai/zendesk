@@ -10,7 +10,7 @@ import Settings from './components/Settings/Settings';
 import './App.css';
 
 function App() {
-  const { session, fetchSession } = useSessionStore();
+  const { isLoading,session, fetchSession } = useSessionStore();
   const { fetchCustomers } = useCustomerStore();
   const { fetchConversations } = useConversationStore();
   useEffect(() => {
@@ -23,6 +23,10 @@ function App() {
       fetchConversations();
     }
   }, [session]);
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!session) {
     return <LandingPage />;
