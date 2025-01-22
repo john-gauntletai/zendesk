@@ -1,14 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import supabase from "../../supabase";
 import { useCustomerStore, useConversationStore, useMessageStore } from "../../store";
 import CustomerList from './CustomerList';
 import ConversationList from './ConversationList';
 import MessagesPanel from './MessagesPanel';
 import InsightsPanel from './InsightsPanel';
-import { Conversation, Message } from "../../types";
+import { Conversation, Message, Customer } from "../../types";
 
 const Inbox = () => {
-  const { customers, selectedCustomerId, setSelectedCustomerId } = useCustomerStore();
+  const { customers, selectedCustomerId, setSelectedCustomerId, addCustomer } = useCustomerStore();
   const { 
     conversations, 
     selectedConversationId, 
@@ -16,6 +16,7 @@ const Inbox = () => {
     addConversation 
   } = useConversationStore();
   const { messages, fetchMessagesByConversationId, addMessage } = useMessageStore();
+  const [isInsightsPanelVisible, setIsInsightsPanelVisible] = useState(true);
 
   useEffect(() => {
     if (selectedCustomerId) {
@@ -63,9 +64,28 @@ const Inbox = () => {
         )
         .subscribe();
 
+      // Subscribe to new customers
+      const customersSubscription = supabase
+        .channel('customers')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'customers',
+            filter: `org_id=eq.b6a0fc05-e31c-4b0d-a987-345c8b6e05ad`
+          },
+          (payload) => {
+            const newCustomer = payload.new as Customer;
+            addCustomer(newCustomer);
+          }
+        )
+        .subscribe();
+
       return () => {
         conversationsSubscription.unsubscribe();
         messagesSubscription.unsubscribe();
+        customersSubscription.unsubscribe();
       };
     }
   }, [selectedCustomerId]);
@@ -106,12 +126,17 @@ const Inbox = () => {
       <MessagesPanel 
         messages={conversationMessages}
         selectedConversation={selectedConversation}
+        onShowInsights={() => setIsInsightsPanelVisible(true)}
+        isInsightsPanelVisible={isInsightsPanelVisible}
       />
 
-      <InsightsPanel 
-        selectedCustomer={selectedCustomer}
-        selectedConversation={selectedConversation}
-      />
+      {isInsightsPanelVisible && (
+        <InsightsPanel 
+          selectedCustomer={selectedCustomer}
+          selectedConversation={selectedConversation}
+          onClose={() => setIsInsightsPanelVisible(false)}
+        />
+      )}
     </div>
   );
 };

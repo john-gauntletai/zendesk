@@ -4,7 +4,8 @@ import { Message, CreateMessagePayload, Conversation } from '../../types';
 import { 
   PaperAirplaneIcon,
   XCircleIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  EyeIcon
 } from '@heroicons/react/24/solid';
 import { useMessageStore, useSessionStore, useConversationStore } from '../../store';
 import { format, isToday, isYesterday, isSameDay, differenceInMinutes } from 'date-fns';
@@ -17,9 +18,16 @@ interface MessageGroup {
 interface MessagesPanelProps {
   messages: Message[];
   selectedConversation: Conversation | null;
+  onShowInsights: () => void;
+  isInsightsPanelVisible: boolean;
 }
 
-const MessagesPanel = ({ messages, selectedConversation }: MessagesPanelProps) => {
+const MessagesPanel = ({ 
+  messages, 
+  selectedConversation,
+  onShowInsights,
+  isInsightsPanelVisible
+}: MessagesPanelProps) => {
   const [messageInput, setMessageInput] = useState('');
   const { session } = useSessionStore();
   const { createMessage } = useMessageStore();
@@ -211,6 +219,35 @@ const MessagesPanel = ({ messages, selectedConversation }: MessagesPanelProps) =
               <PaperAirplaneIcon className="w-5 h-5" />
             </button>
           </div>
+        </div>
+      )}
+
+      {selectedConversation && (
+        <div className="px-4 py-2 border-t border-base-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">
+              Case #{selectedConversation.id.slice(-4)}
+            </span>
+            <span className={classNames(
+              "badge badge-sm",
+              {
+                'badge-info': selectedConversation.status === 'new',
+                'badge-success': selectedConversation.status === 'open',
+                'badge-neutral': selectedConversation.status === 'closed'
+              }
+            )}>
+              {selectedConversation.status}
+            </span>
+          </div>
+          {!isInsightsPanelVisible && (
+            <button
+              onClick={onShowInsights}
+              className="btn btn-ghost btn-sm btn-square"
+              title="Show details"
+            >
+              <EyeIcon className="w-5 h-5" />
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -14,6 +14,7 @@ interface CustomerState {
   fetchCustomers: () => Promise<void>;
   selectedCustomerId: string | null;
   setSelectedCustomerId: (customerId: string | null) => void;
+  addCustomer: (customer: Customer) => void;
 }
 
 interface ConversationState {
@@ -67,7 +68,10 @@ export const useSessionStore = create<SessionState>((set) => ({
 export const useCustomerStore = create<CustomerState>((set) => ({
   customers: [],
   fetchCustomers: async () => {
-    const { data, error } = await supabase.from('customers').select('*');
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
     if (error) {
       console.error(error);
     } else {
@@ -76,12 +80,16 @@ export const useCustomerStore = create<CustomerState>((set) => ({
   },
   selectedCustomerId: null,
   setSelectedCustomerId: (customerId) => set({ selectedCustomerId: customerId }),
+  addCustomer: (customer: Customer) => 
+    set(state => ({
+      customers: [...state.customers, customer]
+    })),
 }));
 
 export const useConversationStore = create<ConversationState>((set) => ({
   conversations: [],
   fetchConversations: async () => {
-    const { data, error } = await supabase.from('conversations').select('*');
+    const { data, error } = await supabase.from('conversations').select('*').eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
     if (error) {
       console.error(error);
     } else {

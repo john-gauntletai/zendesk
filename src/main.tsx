@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
 import SignIn from './components/SignIn.tsx';
-import AvengersHotline from './components/AvengersHotline.tsx';
+import AvengersHotline from './components/AvengersHotline/AvengersHotline.tsx';
 import App from './App.tsx';
 
 createRoot(document.getElementById('root')!).render(

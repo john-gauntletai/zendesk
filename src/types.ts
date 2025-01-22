@@ -22,7 +22,7 @@ export interface Message {
   content: string;
   attachments: any; // jsonb type
   sender_id: string;
-  sender_type: string;
+  sender_type: 'user' | 'customer';
 }
 
 export interface Conversation {
@@ -40,6 +40,7 @@ export interface Customer {
   full_name: string;
   email: string;
   org_id: string;
+  conversations?: Conversation[];
 }
 
 export interface Organization {
