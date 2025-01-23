@@ -1,6 +1,7 @@
 import { Message } from "../../../types";
 import { format, isToday, isYesterday, differenceInMinutes } from "date-fns";
 import Avvvatars from "avvvatars-react";
+import { useCustomerStore, useUserStore } from "../../../store";
 
 interface MessageListProps {
   messages: Message[];
@@ -8,21 +9,26 @@ interface MessageListProps {
 }
 
 const MessageList = ({ messages, channel }: MessageListProps) => {
+  const { customers } = useCustomerStore();
+  const { users } = useUserStore();
   const getChannelColor = (channel: string) => {
     switch (channel?.toLowerCase()) {
-      case 'email':
-        return 'bg-blue-500 text-blue-50';
-      case 'chat':
-        return 'bg-green-500 text-green-50';
+      case "email":
+        return "bg-blue-500 text-blue-50";
+      case "chat":
+        return "bg-green-500 text-green-50";
       default:
-        return 'bg-green-500 text-green-50';
+        return "bg-green-500 text-green-50";
     }
   };
 
-  const shouldShowTimestamp = (message: Message, nextMessage: Message | undefined) => {
+  const shouldShowTimestamp = (
+    message: Message,
+    nextMessage: Message | undefined
+  ) => {
     if (!nextMessage) return true; // Last message
     if (message.sender_id !== nextMessage.sender_id) return true; // Different sender
-    
+
     // More than 5 minutes apart
     const timeDiff = differenceInMinutes(
       new Date(nextMessage.created_at),
@@ -37,14 +43,17 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
     return format(date, "MMMM d, yyyy");
   };
 
-  const groupedMessages = messages.reduce((groups: Record<string, Message[]>, message) => {
-    const date = format(new Date(message.created_at), "yyyy-MM-dd");
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(message);
-    return groups;
-  }, {});
+  const groupedMessages = messages.reduce(
+    (groups: Record<string, Message[]>, message) => {
+      const date = format(new Date(message.created_at), "yyyy-MM-dd");
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(message);
+      return groups;
+    },
+    {}
+  );
 
   return (
     <div className="h-[600px] overflow-y-auto px-4">
@@ -62,31 +71,40 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
             {dateMessages.map((message, index) => {
               const nextMessage = dateMessages[index + 1];
               const showTimestamp = shouldShowTimestamp(message, nextMessage);
-              const isLastInGroup = !nextMessage || message.sender_id !== nextMessage.sender_id;
+              const sender = message.sender_type === "customer" ? customers.find((c) => c.id === message.sender_id) : users.find((u) => u.id === message.sender_id);
 
               return (
-                <div 
-                  key={message.id} 
+                <div
+                  key={message.id}
                   className={`chat ${
-                    message.sender_type === 'customer' ? 'chat-start' : 'chat-end'
-                  } ${!isLastInGroup ? 'chat-bubble-no-pointer' : ''}`}
+                    message.sender_type === "customer"
+                      ? "chat-start"
+                      : "chat-end"
+                  }`}
                 >
-                  <div className={`chat-image ${
-                    message.sender_type === 'customer' ? 'mr-2' : 'ml-2'
-                  }`}>
-                    <Avvvatars value={message.sender_id} size={28} />
+                  <div
+                    className={`chat-image ${
+                      message.sender_type === "customer" ? "mr-2" : "ml-2"
+                    }`}
+                  >
+                    <Avvvatars
+                      value={sender?.full_name || sender?.email}
+                      size={28}
+                    />
                   </div>
-                  <div className={`chat-bubble ${
-                    message.sender_type === 'customer' 
-                      ? getChannelColor(channel)
-                      : 'chat-bubble-base-200'
-                  }`}>
+                  <div
+                    className={`chat-bubble ${
+                      message.sender_type === "customer"
+                        ? getChannelColor(channel)
+                        : "chat-bubble-base-200"
+                    }`}
+                  >
                     {message.content}
                   </div>
                   {showTimestamp && (
                     <div className="chat-footer mt-1 mb-3">
                       <time className="text-xs text-base-content/50">
-                        Sent at {format(new Date(message.created_at), 'h:mm a')}
+                        Sent at {format(new Date(message.created_at), "h:mm a")}
                       </time>
                     </div>
                   )}
@@ -100,4 +118,4 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
   );
 };
 
-export default MessageList; 
+export default MessageList;

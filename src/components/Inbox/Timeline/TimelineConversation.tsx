@@ -5,6 +5,7 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import Avvvatars from "avvvatars-react";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 interface TimelineConversationProps {
   conversation: Conversation;
@@ -41,14 +42,16 @@ const TimelineConversation = ({
   const lastMessage = messages[messages.length - 1];
 
   return (
-    <div
-      className={`bg-base-100 border border-2 rounded-lg transition-all ${
-        isSelected ? "border-primary" : "border-base-300"
-      }`}
-    >
+    <div className="relative bg-base-100 border-2 border-base-300 rounded-lg transition-all shadow-md">
+      {isSelected && (
+        <div className="absolute -top-2 -right-2 text-primary">
+          <CheckCircleIcon className="w-4 h-4" />
+        </div>
+      )}
+      
       {/* Conversation Header */}
       <div
-        className={`p-3 cursor-pointer ${isExpanded ? 'border-b border-base-300' : ''}`}
+        className={`p-3 cursor-pointer ${isExpanded ? 'border-b border-base-300 shadow-md' : ''}`}
         onClick={onToggle}
       >
         <div className="flex gap-4">

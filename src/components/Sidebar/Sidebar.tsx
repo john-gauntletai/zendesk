@@ -94,12 +94,12 @@ const Sidebar = () => {
       <div className="relative flex items-center justify-center">
         <div className="dropdown dropdown-top dropdown-start">
           <label tabIndex={0} className="w-100 flex items-center justify-center cursor-pointer focus:outline-none">
-            <Avvvatars value={session?.display_name || ''} />
+            <Avvvatars value={session?.full_name || ''} />
           </label>
           <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-white rounded-box w-52 mt-1 border border-gray-100">
             <li className="menu-title px-4 py-2">
               <div className="flex flex-col">
-                <span className="font-medium text-gray-900">{session?.display_name}</span>
+                <span className="font-medium text-gray-900">{session?.full_name}</span>
                 <span className="text-xs text-gray-500">{session?.email}</span>
               </div>
             </li>

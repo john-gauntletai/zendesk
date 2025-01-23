@@ -47,6 +47,7 @@ const SignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    full_name: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,6 +80,9 @@ const SignIn = () => {
           password: formData.password,
           options: {
             emailRedirectTo: `${import.meta.env.VITE_SUPABASE_REDIRECT_URL}`,
+            data: {
+              full_name: formData.full_name,
+            }
           },
         });
         if (error) throw error;
@@ -194,6 +198,25 @@ const SignIn = () => {
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
+            {!isSignIn && (
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text text-sm">Full Name</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                    className="w-full input input-bordered input-sm h-9 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text text-sm">Email</span>

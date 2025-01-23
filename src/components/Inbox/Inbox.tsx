@@ -11,6 +11,7 @@ import { Conversation, Message, Customer } from "../../types";
 import InboxSidebar from "./InboxSidebar";
 import ConversationCard from "./ConversationCard";
 import Timeline from "./Timeline/Timeline";
+import InsightsPanel from "./InsightsPanel/InsightsPanel";
 
 const Inbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -179,7 +180,7 @@ const Inbox = () => {
       />
 
       {/* Main Content Area */}
-      <div className="pl-1">
+      <div className="pl-2 pt-1">
         <div className="overflow-y-auto space-y-1">
           {filteredConversations.map((conversation) => {
             const customer = customers.find(
@@ -211,6 +212,7 @@ const Inbox = () => {
         </div>
       </div>
       <Timeline />
+      {selectedConversationId && <InsightsPanel />}
     </div>
 
 );

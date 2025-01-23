@@ -35,6 +35,7 @@ interface ConversationState {
 
 interface MessageState {
   messages: Message[];
+  fetchMessages: () => Promise<void>;
   fetchMessagesByConversationId: (conversationId: string) => Promise<Message[]>;
   createMessage: (message: CreateMessagePayload) => Promise<void>;
   addMessage: (message: Message) => void;
