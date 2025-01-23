@@ -1,15 +1,15 @@
-import { 
-  ChevronDownIcon, 
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
-import { DEFAULT_ALL_FILTERS, DEFAULT_ASSIGNED_TO_ME_FILTERS } from './constants';
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  DEFAULT_ALL_FILTERS,
+  DEFAULT_ASSIGNED_TO_ME_FILTERS,
+} from "./constants";
 
 interface InboxSidebarProps {
   expandedSections: {
     all: boolean;
     assigned: boolean;
   };
-  onToggleSection: (section: 'all' | 'assigned') => void;
+  onToggleSection: (section: "all" | "assigned") => void;
   onFilterClick: (query: Record<string, string>) => void;
   isFilterActive: (query: Record<string, string>) => boolean;
   conversationCounts: {
@@ -38,21 +38,23 @@ const InboxSidebar = ({
             onClick={() => onToggleSection("all")}
             className="flex items-center w-full text-left px-2 py-1 text-sm font-medium rounded-lg"
           >
-            {expandedSections.all ? (
-              <ChevronDownIcon className="w-3 h-3 mr-2 flex-shrink-0" />
-            ) : (
-              <ChevronRightIcon className="w-3 h-3 mr-2 flex-shrink-0" />
-            )}
             <span>All</span>
+            {expandedSections.all ? (
+              <ChevronDownIcon className="w-3 h-3 ml-2 flex-shrink-0" />
+            ) : (
+              <ChevronRightIcon className="w-3 h-3 ml-2 flex-shrink-0" />
+            )}
           </button>
 
           {expandedSections.all && (
-            <div className="ml-4">
+            <div className="ml-2">
               {DEFAULT_ALL_FILTERS.map((filter) => (
                 <button
                   key={filter.label}
-                  className={`flex items-center justify-between w-full px-4 py-1 text-sm hover:bg-base-200 rounded-lg ${
-                    isFilterActive(filter.query) ? 'bg-base-200 text-primary' : ''
+                  className={`flex items-center justify-between w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                    isFilterActive(filter.query)
+                      ? "bg-base-200 text-primary"
+                      : ""
                   }`}
                   onClick={() => onFilterClick(filter.query)}
                 >
@@ -74,21 +76,23 @@ const InboxSidebar = ({
             onClick={() => onToggleSection("assigned")}
             className="flex items-center w-full text-left px-2 py-1 text-sm font-medium rounded-lg"
           >
-            {expandedSections.assigned ? (
-              <ChevronDownIcon className="w-3 h-3 mr-2 flex-shrink-0" />
-            ) : (
-              <ChevronRightIcon className="w-3 h-3 mr-2 flex-shrink-0" />
-            )}
             <span>Assigned to Me</span>
+            {expandedSections.assigned ? (
+              <ChevronDownIcon className="w-3 h-3 ml-2 flex-shrink-0" />
+            ) : (
+              <ChevronRightIcon className="w-3 h-3 ml-2 flex-shrink-0" />
+            )}
           </button>
 
           {expandedSections.assigned && userId && (
-            <div className="ml-4">
+            <div className="ml-2">
               {DEFAULT_ASSIGNED_TO_ME_FILTERS(userId).map((filter) => (
                 <button
                   key={filter.label}
-                  className={`flex items-center justify-between w-full px-4 py-1 text-sm hover:bg-base-200 rounded-lg ${
-                    isFilterActive(filter.query) ? 'bg-base-200 text-primary' : ''
+                  className={`flex items-center justify-between w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                    isFilterActive(filter.query)
+                      ? "bg-base-200 text-primary"
+                      : ""
                   }`}
                   onClick={() => onFilterClick(filter.query)}
                 >
@@ -108,4 +112,4 @@ const InboxSidebar = ({
   );
 };
 
-export default InboxSidebar; 
+export default InboxSidebar;
