@@ -35,7 +35,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-14 h-screen flex flex-col flex-none items-center py-4 bg-neutral border-r border-gray-800">
+    <div className="w-14 h-screen flex flex-col flex-none items-center py-4 bg-neutral">
       {/* Logo */}
       <div className="mb-8">
         <Link 

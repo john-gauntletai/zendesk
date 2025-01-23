@@ -54,8 +54,10 @@ const ConversationCard = ({
   return (
     <div
       onClick={onClick}
-      className={`w-80 bg-base-100 rounded-lg p-3 shadow-sm hover:shadow cursor-pointer ${
-        isSelected ? 'ring-2 ring-primary' : ''
+      className={`w-80 rounded-lg p-3 shadow-sm hover:shadow cursor-pointer ${
+        isSelected 
+          ? 'bg-primary text-primary-content' 
+          : 'bg-base-100'
       }`}
     >
       <div className="flex">
@@ -66,21 +68,29 @@ const ConversationCard = ({
 
         {/* Content Column */}
         <div className="flex-1 min-w-0 ml-3">
-          {/* Customer Name and Subject Line - Same size, different weights */}
-          <div className="text-sm font-bold">
+          {/* Customer Name and Subject Line */}
+          <div className={`text-sm font-bold ${
+            isSelected ? 'text-primary-content' : ''
+          }`}>
             {customer?.full_name || 'Unknown Customer'}
           </div>
 
-          <div className="text-sm mt-1">
+          <div className={`text-sm mt-1 ${
+            isSelected ? 'text-primary-content' : ''
+          }`}>
             {conversation.title || 'No subject'}
           </div>
 
-          {/* Last Message and Timestamp - Smaller size and muted */}
+          {/* Last Message and Timestamp */}
           <div className="flex items-start justify-between mt-1">
-            <div className="text-sm text-base-content/60 line-clamp-1 flex-1">
+            <div className={`text-sm line-clamp-1 flex-1 ${
+              isSelected ? 'text-primary-content/90' : 'text-base-content/60'
+            }`}>
               {getPreviewText(lastMessage)}
             </div>
-            <div className="text-[13px] text-base-content/50 ml-4 whitespace-nowrap">
+            <div className={`text-[13px] ml-4 whitespace-nowrap ${
+              isSelected ? 'text-primary-content/80' : 'text-base-content/50'
+            }`}>
               {formatLastUpdated(new Date(conversation.created_at))}
             </div>
           </div>
