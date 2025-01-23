@@ -63,7 +63,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       console.error(error);
     } else {
       set({ session: null });
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   },
 }));
@@ -142,6 +142,15 @@ export const useConversationStore = create<ConversationState>((set) => ({
 
 export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
+  fetchMessages: async () => {
+    const { data, error } = await supabase.from('messages').select('*');
+    if (error) {
+      console.error(error);
+      toast.error('Failed to fetch messages');
+    } else {
+      set({ messages: data || [] });
+    }
+  },
   fetchMessagesByConversationId: async (conversationId: string) => {
     const { data, error } = await supabase
       .from('messages')

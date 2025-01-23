@@ -13,7 +13,7 @@ import App from './App.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Toaster position="bottom-left" toastOptions={{ duration: 4000 }} />
+    <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
@@ -21,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="inbox" element={<Inbox />} />
           <Route path="knowledge-base" element={<KnowledgeBase />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/login" element={<SignIn />} />
         <Route path="/avengers" element={<AvengersHotline />} />

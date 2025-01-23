@@ -13,6 +13,8 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.47.16",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "avvvatars-react": "^0.4.2",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "react": "^18.3.1",

@@ -26,6 +26,7 @@
 - channel (text)
 - customer_id (uuid, FK references customers.id)
 - status (text)
+- assigned_to (uuid, FK references users.id)
 
 ### customers
 - id (uuid, PK)

@@ -31,6 +31,14 @@ const quotes = [
   }
 ];
 
+// Move quote selection outside component
+const getRandomQuote = () => {
+  return quotes[Math.floor(Math.random() * quotes.length)];
+};
+
+// Select one quote that will be used for the entire session
+const staticQuote = getRandomQuote();
+
 const SignIn = () => {
   const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
@@ -42,8 +50,6 @@ const SignIn = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -66,7 +72,6 @@ const SignIn = () => {
         });
         if (error) throw error;
         navigate('/');
-        toast.success('Signed in successfully');
       } else {
         // Sign up
         const { data, error } = await supabase.auth.signUp({
@@ -121,10 +126,10 @@ const SignIn = () => {
           {/* Quote */}
           <div className="relative z-10 text-center px-8 max-w-lg">
             <h2 className="mb-4 text-3xl font-medium text-white/90 leading-relaxed">
-              "{randomQuote.text}"
+              "{staticQuote.text}"
             </h2>
             <p className="text-white/70 text-sm font-medium">
-              {randomQuote.author}
+              {staticQuote.author}
             </p>
             <div className="mt-6 flex justify-center">
               <div className="w-16 h-0.5 bg-white/10 rounded-full" />
@@ -157,10 +162,10 @@ const SignIn = () => {
         {/* Quote */}
         <div className="relative z-10 text-center px-8 max-w-lg">
           <h2 className="mb-4 text-3xl font-medium text-white/90 leading-relaxed">
-            "{randomQuote.text}"
+            "{staticQuote.text}"
           </h2>
           <p className="text-white/70 text-sm font-medium">
-            {randomQuote.author}
+            {staticQuote.author}
           </p>
           <div className="mt-6 flex justify-center">
             <div className="w-16 h-0.5 bg-white/10 rounded-full" />

@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
+import Avvvatars from 'avvvatars-react';
 import { useSessionStore } from '../../store';
 import {
   InboxIcon,
   ChartBarIcon,
   BookOpenIcon,
   Cog6ToothIcon,
-} from '@heroicons/react/24/solid';
+  CommandLineIcon,
+  ArrowRightStartOnRectangleIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline';
 
 const Sidebar = () => {
   const { logout } = useSessionStore();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { session } = useSessionStore();
   const location = useLocation();
 
   const isActive = (path: string) => {
@@ -18,10 +23,10 @@ const Sidebar = () => {
   };
 
   const getLinkClasses = (path: string) => {
-    return `p-2 rounded-lg tooltip tooltip-right ${
+    return `p-2 rounded-lg tooltip tooltip-right transition-colors ${
       isActive(path) 
         ? 'bg-primary text-primary-content' 
-        : 'hover:bg-base-300'
+        : 'text-gray-400 hover:text-white hover:bg-base-800'
     }`;
   };
 
@@ -30,11 +35,15 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-14 h-screen flex flex-col items-center py-4">
+    <div className="w-14 h-screen flex flex-col flex-none items-center py-4 bg-neutral border-r border-gray-800">
       {/* Logo */}
       <div className="mb-8">
-        <Link to="/" className="text-xl font-bold text-primary">
-          🦄
+        <Link 
+          to="/" 
+          className="text-gray-400 hover:text-white transition-colors"
+          data-tip="Home"
+        >
+          <CommandLineIcon className="w-6 h-6" />
         </Link>
       </div>
 
@@ -46,6 +55,14 @@ const Sidebar = () => {
           data-tip="Inbox"
         >
           <InboxIcon className="w-5 h-5" />
+        </Link>
+
+        <Link
+          to="/customers"
+          className={getLinkClasses('/customers')}
+          data-tip="Customers"
+        >
+          <UsersIcon className="w-5 h-5" />
         </Link>
 
         <Link
@@ -74,29 +91,30 @@ const Sidebar = () => {
       </nav>
 
       {/* Profile Menu */}
-      <div className="relative">
-        <button
-          onClick={() => setShowProfileMenu(!showProfileMenu)}
-          className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center"
-        >
-          <span className="text-lg">👤</span>
-        </button>
-
-        {/* Dropdown Menu */}
-        {showProfileMenu && (
-          <div className="absolute bottom-full mb-2 left-full ml-2 w-48 bg-base-100 rounded-lg shadow-xl py-2">
-            <div className="px-4 py-2 border-b border-base-200">
-              <div className="font-medium">user@example.com</div>
-              <div className="text-sm text-base-content/70">Personal Account</div>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 text-left w-full hover:bg-base-200 text-error"
-            >
-              Sign Out
-            </button>
-          </div>
-        )}
+      <div className="relative flex items-center justify-center">
+        <div className="dropdown dropdown-top dropdown-start">
+          <label tabIndex={0} className="w-100 flex items-center justify-center cursor-pointer focus:outline-none">
+            <Avvvatars value={session?.display_name || ''} />
+          </label>
+          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-white rounded-box w-52 mt-1 border border-gray-100">
+            <li className="menu-title px-4 py-2">
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-900">{session?.display_name}</span>
+                <span className="text-xs text-gray-500">{session?.email}</span>
+              </div>
+            </li>
+            <div className="divider my-0"></div>
+            <li>
+              <button 
+                onClick={() => handleSignOut()} 
+                className="flex items-center gap-2 text-gray-600 hover:text-red-600 hover:bg-red-50"
+              >
+                <ArrowRightStartOnRectangleIcon className="w-4 h-4" />
+                <span>Sign out</span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );
