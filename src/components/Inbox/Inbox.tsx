@@ -10,6 +10,7 @@ import {
 import { Conversation, Message, Customer } from "../../types";
 import InboxSidebar from "./InboxSidebar";
 import ConversationCard from "./ConversationCard";
+import Timeline from "./Timeline/Timeline";
 
 const Inbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -209,6 +210,7 @@ const Inbox = () => {
           )}
         </div>
       </div>
+      <Timeline />
     </div>
 
 );
