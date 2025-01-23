@@ -28,7 +28,7 @@ const InboxSidebar = ({
   userId,
 }: InboxSidebarProps) => {
   return (
-    <div className="w-56 bg-base-100 border-r border-base-200">
+    <div className="w-56 bg-base-100 border-t-2 border-b-2 border-r-2 border-base-300 flex-shrink-0 shadow-sm rounded-r-lg">
       <div className="py-4 px-2">
         <h2 className="text-lg font-bold mb-4 px-2">Inbox</h2>
 

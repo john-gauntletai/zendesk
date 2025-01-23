@@ -1,7 +1,10 @@
 import { Message, Conversation } from "../../../types";
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import Avvvatars from "avvvatars-react";
+import MessageList from "./MessageList";
+import MessageInput from "./MessageInput";
 
 interface TimelineConversationProps {
   conversation: Conversation;
@@ -27,18 +30,20 @@ const TimelineConversation = ({
   const getChannelIcon = (channel: string) => {
     switch (channel?.toLowerCase()) {
       case 'email':
-        return <EnvelopeIcon className="w-4 h-4 text-blue-500" />;
+        return <EnvelopeIcon className="w-5 h-5 text-blue-500" />;
       case 'chat':
-        return <ChatBubbleLeftIcon className="w-4 h-4 text-green-500" />;
+        return <ChatBubbleLeftIcon className="w-5 h-5 text-green-500" />;
       default:
-        return <ChatBubbleLeftIcon className="w-4 h-4 text-green-500" />;
+        return <ChatBubbleLeftIcon className="w-5 h-5 text-green-500" />;
     }
   };
 
+  const lastMessage = messages[messages.length - 1];
+
   return (
     <div
-      className={`border rounded-lg transition-all ${
-        isSelected ? 'border-primary' : 'border-base-300'
+      className={`bg-base-100 border border-2 rounded-lg transition-all ${
+        isSelected ? "border-primary" : "border-base-300"
       }`}
     >
       {/* Conversation Header */}
@@ -46,56 +51,70 @@ const TimelineConversation = ({
         className={`p-3 cursor-pointer ${isExpanded ? 'border-b border-base-300' : ''}`}
         onClick={onToggle}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex gap-4">
+          {/* Channel Icon Column */}
+          <div className="flex-shrink-0 w-6 flex items-center justify-center">
             {getChannelIcon(conversation.channel)}
-            <span className="font-medium">{conversation.subject || 'No subject'}</span>
           </div>
-          <span className="text-xs text-base-content/60">
-            {format(new Date(conversation.created_at), 'MMM d')}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            conversation.status === 'open'
-              ? 'bg-success/20 text-success'
-              : 'bg-base-300 text-base-content/60'
-          }`}>
-            {conversation.status}
-          </span>
+
+          {/* Content Column */}
+          <div className="flex-1 min-w-0">
+            <div className="font-medium mb-1">
+              {conversation.title || 'No subject'}
+            </div>
+            <div className="text-sm text-base-content/70 mb-1 line-clamp-1">
+              {lastMessage && formatDistanceToNow(new Date(lastMessage.created_at), { addSuffix: true })} • {lastMessage?.content || 'No messages'}
+            </div>
+            <div className="flex gap-2 mt-2">
+              {conversation.tags?.map(tag => (
+                <span 
+                  key={tag} 
+                  className="text-xs px-2 py-0.5 bg-base-200 text-base-content/70 rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Status & Assignment Column */}
+          <div className="flex-shrink-0 flex flex-col items-end gap-2">
+            <span className={`text-xs px-2 py-0.5 rounded-lg capitalize font-bold ${
+              conversation.status === 'open'
+                ? 'bg-error/20 text-error'
+                : 'bg-success/20 text-success'
+            }`}>
+              {conversation.status}
+            </span>
+            {conversation.assigned_to && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-base-content/60">Assigned to</span>
+                <div className="flex items-center gap-1">
+                  <Avvvatars value={conversation.assigned_to} size={16} />
+                  <span className="text-xs">{conversation.assigned_to}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="p-3 space-y-3">
+        <>
           {/* Messages */}
-          <div className="space-y-2">
-            {messages.map(message => (
-              <div key={message.id} className="text-sm">
-                <div className="font-medium">{message.sender_name}</div>
-                <div className="text-base-content/70">{message.content}</div>
-              </div>
-            ))}
-          </div>
+          <MessageList 
+            messages={messages} 
+            channel={conversation.channel}
+          />
 
           {/* Message Input */}
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={e => onMessageChange(e.target.value)}
-              placeholder="Type your message..."
-              className="input input-bordered input-sm flex-1"
-            />
-            <button
-              onClick={onMessageSubmit}
-              className="btn btn-primary btn-sm"
-            >
-              <PaperAirplaneIcon className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          <MessageInput
+            value={messageInput}
+            onChange={onMessageChange}
+            onSubmit={onMessageSubmit}
+          />
+        </>
       )}
     </div>
   );

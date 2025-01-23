@@ -10,6 +10,11 @@ interface SessionState {
   logout: () => Promise<void>;
 }
 
+interface UserState {
+  users: User[];
+  fetchUsers: () => Promise<void>;
+}
+
 interface CustomerState {
   customers: Customer[];
   fetchCustomers: () => Promise<void>;
@@ -64,6 +69,18 @@ export const useSessionStore = create<SessionState>((set) => ({
     } else {
       set({ session: null });
       window.location.href = '/login';
+    }
+  },
+}));
+
+export const useUserStore = create<UserState>((set) => ({
+  users: [],
+  fetchUsers: async () => {
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) {
+      console.error(error);
+    } else {
+      set({ users: data || [] });
     }
   },
 }));

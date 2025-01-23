@@ -179,8 +179,8 @@ const Inbox = () => {
       />
 
       {/* Main Content Area */}
-      <div className="p-4">
-        <div className="overflow-y-auto space-y-3">
+      <div className="pl-1">
+        <div className="overflow-y-auto space-y-1">
           {filteredConversations.map((conversation) => {
             const customer = customers.find(
               (c) => c.id === conversation.customer_id
