@@ -58,14 +58,6 @@ const Sidebar = () => {
         </Link>
 
         <Link
-          to="/customers"
-          className={getLinkClasses('/customers')}
-          data-tip="Customers"
-        >
-          <UsersIcon className="w-5 h-5" />
-        </Link>
-
-        <Link
           to="/reports"
           className={getLinkClasses('/reports')}
           data-tip="Reports"

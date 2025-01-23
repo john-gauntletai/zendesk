@@ -10,23 +10,64 @@ import Settings from './components/Settings/Settings.tsx';
 import NotFound from './components/NotFound.tsx';
 import AvengersHotline from './components/AvengersHotline/AvengersHotline.tsx';
 import App from './App.tsx';
+import Profile from './components/Settings/Profile';
+import Teammates from './components/Settings/Teammates';
+import Teams from './components/Settings/Teams';
+import Tags from './components/Settings/Tags';
+import Routing from './components/Settings/Routing';
+import Subscription from './components/Settings/Subscription';
+import { createBrowserRouter, RouterProvider } from 'react-router';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        path: "inbox",
+        element: <Inbox />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+        children: [
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+          {
+            path: "teammates",
+            element: <Teammates />,
+          },
+          {
+            path: "teams",
+            element: <Teams />,
+          },
+          {
+            path: "tags",
+            element: <Tags />,
+          },
+          {
+            path: "routing",
+            element: <Routing />,
+          },
+          {
+            path: "subscription",
+            element: <Subscription />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <SignIn />,
+  },
+]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />}>
-          <Route index element={<Navigate to="/inbox" />} />
-          <Route path="inbox" element={<Inbox />} />
-          <Route path="knowledge-base" element={<KnowledgeBase />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/avengers" element={<AvengersHotline />} />
-        <Route path="*" element={<NotFound />}/>
-      </Routes>
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>
 );

@@ -1,25 +1,31 @@
+import { useState } from "react";
+import { Outlet } from "react-router";
+import SettingsSidebar from "./SettingsSidebar";
+
 const Settings = () => {
+  const [expandedSections, setExpandedSections] = useState({
+    general: true,
+    inbox: true,
+    billing: true,
+  });
+
+  const toggleSection = (section: "general" | "inbox" | "billing") => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Account Settings</h2>
-          <div className="space-y-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input type="text" placeholder="email@example.com" className="input input-bordered" disabled />
-            </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Full Name</span>
-              </label>
-              <input type="text" placeholder="John Doe" className="input input-bordered" disabled />
-            </div>
-          </div>
-        </div>
+    <div className="flex h-screen bg-base-200">
+      <SettingsSidebar
+        expandedSections={expandedSections}
+        onToggleSection={toggleSection}
+      />
+      
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <Outlet />
       </div>
     </div>
   );
