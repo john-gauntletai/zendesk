@@ -1,7 +1,7 @@
 import { Message, Customer, Conversation } from "../../types";
 import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { format, isWithinInterval, subDays, subHours } from "date-fns";
-import Avvvatars from "avvvatars-react";
+import Avatar from "../__shared/Avatar";
 
 interface ConversationCardProps {
   conversation: Conversation;
@@ -67,7 +67,7 @@ const ConversationCard = ({
         {/* Avatar Column with Channel Icon Overlay */}
         <div className="flex-shrink-0 w-8 flex items-center justify-center">
           <div className="relative">
-            <Avvvatars value={customer?.full_name || "Unknown"} size={32}/>
+            <Avatar user={customer} size={32} />
             <div className="absolute -bottom-1 -right-1">
               {getChannelIcon(conversation.channel)}
             </div>

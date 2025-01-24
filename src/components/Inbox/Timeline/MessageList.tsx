@@ -1,6 +1,6 @@
 import { Message } from "../../../types";
 import { format, isToday, isYesterday, differenceInMinutes } from "date-fns";
-import Avvvatars from "avvvatars-react";
+import Avatar from "../../__shared/Avatar";
 import { useCustomerStore, useUserStore } from "../../../store";
 
 interface MessageListProps {
@@ -87,8 +87,8 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
                       message.sender_type === "customer" ? "mr-2" : "ml-2"
                     }`}
                   >
-                    <Avvvatars
-                      value={sender?.full_name || sender?.email}
+                    <Avatar 
+                      user={sender} 
                       size={28}
                     />
                   </div>

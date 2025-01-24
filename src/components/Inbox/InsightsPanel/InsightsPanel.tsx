@@ -1,5 +1,5 @@
 import { useCustomerStore, useConversationStore } from "../../../store";
-import Avvvatars from "avvvatars-react";
+import Avatar from "../../__shared/Avatar";
 
 const InsightsPanel = () => {
   const { customers } = useCustomerStore();
@@ -23,13 +23,13 @@ const InsightsPanel = () => {
   }
 
   return (
-    <div className="w-80 border-l-2 border-base-300 bg-base-100">
+    <div className="w-80 border-l-2 border-base-300 bg-base-100 flex-shrink-0">
       {/* Customer Section */}
       <div className="p-4 border-b border-base-300">
         <h3 className="text-sm font-medium mb-4">Customer</h3>
         
         <div className="flex items-center gap-3 mb-4">
-          <Avvvatars value={customer.full_name} size={40} />
+          <Avatar user={customer} size={40} />
           <div>
             <div className="font-medium">{customer.full_name}</div>
             <div className="text-sm text-base-content/60">{customer.email}</div>

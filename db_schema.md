@@ -9,6 +9,7 @@
 - org_id (uuid, FK references orgs.id)
 - role_id (uuid, FK references roles.id)
 - email (text)
+- avatar_url (text)
 
 ### messages
 - id (uuid, PK)

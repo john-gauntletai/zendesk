@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import Avvvatars from 'avvvatars-react';
+import Avatar from "../__shared/Avatar";
 import { useSessionStore } from '../../store';
 import {
   InboxIcon,
@@ -86,7 +86,7 @@ const Sidebar = () => {
       <div className="relative flex items-center justify-center">
         <div className="dropdown dropdown-top dropdown-start">
           <label tabIndex={0} className="w-100 flex items-center justify-center cursor-pointer focus:outline-none">
-            <Avvvatars value={session?.full_name || ''} />
+            <Avatar user={session} size={32} />
           </label>
           <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-white rounded-box w-52 mt-1 border border-gray-100">
             <li className="menu-title px-4 py-2">

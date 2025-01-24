@@ -24,7 +24,7 @@ const Settings = () => {
       />
       
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto pt-4 px-6">
         <Outlet />
       </div>
     </div>

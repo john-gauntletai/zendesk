@@ -2,7 +2,7 @@ import { Message, Conversation } from "../../../types";
 import { format, formatDistanceToNow } from 'date-fns';
 import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
-import Avvvatars from "avvvatars-react";
+import Avatar from "../../__shared/Avatar";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
@@ -93,7 +93,7 @@ const TimelineConversation = ({
               <div className="flex items-center gap-2">
                 <span className="text-xs text-base-content/60">Assigned to</span>
                 <div className="flex items-center gap-1">
-                  <Avvvatars value={conversation.assigned_to} size={16} />
+                  <Avatar user={{ id: conversation.assigned_to }} size={16} />
                   <span className="text-xs">{conversation.assigned_to}</span>
                 </div>
               </div>
