@@ -15,14 +15,13 @@ import InsightsPanel from "./InsightsPanel/InsightsPanel";
 
 const Inbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { customers, selectedCustomerId, addCustomer } = useCustomerStore();
+  const { customers } = useCustomerStore();
   const {
     conversations,
     selectedConversationId,
     setSelectedConversationId,
-    addConversation,
   } = useConversationStore();
-  const { messages, fetchMessagesByConversationId, addMessage } =
+  const { messages } =
     useMessageStore();
   const { session } = useSessionStore();
 
@@ -37,87 +36,10 @@ const Inbox = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (selectedCustomerId) {
-      const customerConversations = conversations.filter(
-        (conversation) => conversation.customer_id === selectedCustomerId
-      );
-
-      customerConversations.forEach((conversation) => {
-        fetchMessagesByConversationId(conversation.id);
-      });
-
-      // Subscribe to new conversations for this customer
-      const conversationsSubscription = supabase
-        .channel("conversations")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "conversations",
-            filter: `customer_id=eq.${selectedCustomerId}`,
-          },
-          (payload) => {
-            const newConversation = payload.new as Conversation;
-            addConversation(newConversation);
-          }
-        )
-        .subscribe();
-
-      // Subscribe to new messages in this customer's conversations
-      const messagesSubscription = supabase
-        .channel("messages")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=in.(${customerConversations
-              .map((c) => c.id)
-              .join(",")})`,
-          },
-          (payload) => {
-            const newMessage = payload.new as Message;
-            addMessage(newMessage);
-          }
-        )
-        .subscribe();
-
-      // Subscribe to new customers
-      const customersSubscription = supabase
-        .channel("customers")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "customers",
-            filter: `org_id=eq.b6a0fc05-e31c-4b0d-a987-345c8b6e05ad`,
-          },
-          (payload) => {
-            const newCustomer = payload.new as Customer;
-            addCustomer(newCustomer);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        conversationsSubscription.unsubscribe();
-        messagesSubscription.unsubscribe();
-        customersSubscription.unsubscribe();
-      };
-    }
-  }, [selectedCustomerId, conversations]);
 
   const handleClickConversation = async (conversationId: string) => {
     setSelectedConversationId(conversationId);
   };
-
-  const selectedConversation = conversations.find(
-    (conversation) => conversation.id === selectedConversationId
-  );
 
   const toggleSection = (section: "all" | "assigned") => {
     setExpandedSections((prev) => ({

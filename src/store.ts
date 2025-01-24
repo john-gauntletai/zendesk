@@ -1,7 +1,15 @@
-import { create } from 'zustand';
-import { toast } from 'react-hot-toast';
-import supabase from './supabase';
-import { User, Conversation, Message, Customer, CreateMessagePayload } from './types';
+import { create } from "zustand";
+import { toast } from "react-hot-toast";
+import supabase from "./supabase";
+import {
+  User,
+  Conversation,
+  Message,
+  Customer,
+  CreateMessagePayload,
+  Tag,
+  Role,
+} from "./types";
 
 interface SessionState {
   isLoading: boolean;
@@ -13,6 +21,8 @@ interface SessionState {
 interface UserState {
   users: User[];
   fetchUsers: () => Promise<void>;
+  addUser: (user: User) => void;
+  updateUser: (user: User) => void;
 }
 
 interface CustomerState {
@@ -21,6 +31,7 @@ interface CustomerState {
   selectedCustomerId: string | null;
   setSelectedCustomerId: (customerId: string | null) => void;
   addCustomer: (customer: Customer) => void;
+  updateCustomer: (customer: Customer) => void;
 }
 
 interface ConversationState {
@@ -30,7 +41,11 @@ interface ConversationState {
   selectedConversationId: string | null;
   setSelectedConversationId: (conversationId: string | null) => void;
   addConversation: (conversation: Conversation) => void;
-  updateConversationStatus: (conversationId: string, status: string) => Promise<void>;
+  updateConversation: (conversation: Conversation) => void;
+  updateConversationStatus: (
+    conversationId: string,
+    status: string
+  ) => Promise<void>;
 }
 
 interface MessageState {
@@ -39,11 +54,17 @@ interface MessageState {
   fetchMessagesByConversationId: (conversationId: string) => Promise<Message[]>;
   createMessage: (message: CreateMessagePayload) => Promise<void>;
   addMessage: (message: Message) => void;
+  updateMessage: (message: Message) => void;
 }
 
 interface TagsState {
   tags: Tag[];
   fetchTags: () => Promise<void>;
+}
+
+interface RolesState {
+  roles: Role[];
+  fetchRoles: () => Promise<void>;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -53,13 +74,13 @@ export const useSessionStore = create<SessionState>((set) => ({
     try {
       const { data, error } = await supabase.auth.getSession();
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', data.session?.user.id)
+        .from("users")
+        .select("*")
+        .eq("id", data.session?.user.id)
         .single();
 
       if (error || userError) {
-        throw new Error('Failed to fetch session');
+        throw new Error("Failed to fetch session");
       }
       set({ session: userData });
     } catch (error) {
@@ -74,7 +95,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       console.error(error);
     } else {
       set({ session: null });
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   },
 }));
@@ -82,22 +103,27 @@ export const useSessionStore = create<SessionState>((set) => ({
 export const useUserStore = create<UserState>((set) => ({
   users: [],
   fetchUsers: async () => {
-    const { data, error } = await supabase.from('users').select('*');
+    const { data, error } = await supabase.from("users").select("*");
     if (error) {
       console.error(error);
     } else {
       set({ users: data || [] });
     }
   },
+  addUser: (user: User) => set((state) => ({ users: [...state.users, user] })),
+  updateUser: (user: User) =>
+    set((state) => ({
+      users: state.users.map((u) => (u.id === user.id ? user : u)),
+    })),
 }));
 
 export const useCustomerStore = create<CustomerState>((set) => ({
   customers: [],
   fetchCustomers: async () => {
     const { data, error } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
+      .from("customers")
+      .select("*")
+      .eq("org_id", "b6a0fc05-e31c-4b0d-a987-345c8b6e05ad");
     if (error) {
       console.error(error);
     } else {
@@ -105,17 +131,27 @@ export const useCustomerStore = create<CustomerState>((set) => ({
     }
   },
   selectedCustomerId: null,
-  setSelectedCustomerId: (customerId) => set({ selectedCustomerId: customerId }),
-  addCustomer: (customer: Customer) => 
-    set(state => ({
-      customers: [...state.customers, customer]
+  setSelectedCustomerId: (customerId) =>
+    set({ selectedCustomerId: customerId }),
+  addCustomer: (customer: Customer) =>
+    set((state) => ({
+      customers: [...state.customers, customer],
+    })),
+  updateCustomer: (customer: Customer) =>
+    set((state) => ({
+      customers: state.customers.map((c) =>
+        c.id === customer.id ? customer : c
+      ),
     })),
 }));
 
 export const useConversationStore = create<ConversationState>((set) => ({
   conversations: [],
   fetchConversations: async () => {
-    const { data, error } = await supabase.from('conversations').select('*, tags(*)').eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*, tags(*)")
+      .eq("org_id", "b6a0fc05-e31c-4b0d-a987-345c8b6e05ad");
     if (error) {
       console.error(error);
     } else {
@@ -124,9 +160,9 @@ export const useConversationStore = create<ConversationState>((set) => ({
   },
   fetchConversationById: async (conversationId: string) => {
     const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', conversationId)
+      .from("conversations")
+      .select("*")
+      .eq("id", conversationId)
       .single();
     if (error) {
       console.error(error);
@@ -135,28 +171,36 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }
   },
   selectedConversationId: null,
-  setSelectedConversationId: (conversationId) => set({ selectedConversationId: conversationId }),
-  addConversation: (conversation: Conversation) => 
-    set(state => ({
-      conversations: [...state.conversations, conversation]
+  setSelectedConversationId: (conversationId) =>
+    set({ selectedConversationId: conversationId }),
+  addConversation: (conversation: Conversation) =>
+    set((state) => ({
+      conversations: [...state.conversations, conversation],
+    })),
+  updateConversation: (conversation: Conversation) =>
+    set((state) => ({
+      conversations: state.conversations.map((conv) =>
+        conv.id === conversation.id ? conversation : conv
+      ),
     })),
   updateConversationStatus: async (conversationId: string, status: string) => {
     const { data, error } = await supabase
-      .from('conversations')
+      .from("conversations")
       .update({ status })
-      .eq('id', conversationId);
-    
+      .eq("id", conversationId);
+
     if (error) {
       console.error(error);
-      toast.error('Failed to update conversation status');
+      toast.error("Failed to update conversation status");
     } else {
-      set(state => ({
-        conversations: state.conversations.map(conv => 
+      set((state) => ({
+        conversations: state.conversations.map((conv) =>
           conv.id === conversationId ? { ...conv, status } : conv
         ),
-        selectedConversation: state.selectedConversation?.id === conversationId 
-          ? { ...state.selectedConversation, status }
-          : state.selectedConversation
+        selectedConversation:
+          state.selectedConversation?.id === conversationId
+            ? { ...state.selectedConversation, status }
+            : state.selectedConversation,
       }));
       toast.success(`Conversation ${status}`);
     }
@@ -166,22 +210,22 @@ export const useConversationStore = create<ConversationState>((set) => ({
 export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
   fetchMessages: async () => {
-    const { data, error } = await supabase.from('messages').select('*');
+    const { data, error } = await supabase.from("messages").select("*");
     if (error) {
       console.error(error);
-      toast.error('Failed to fetch messages');
+      toast.error("Failed to fetch messages");
     } else {
       set({ messages: data || [] });
     }
   },
   fetchMessagesByConversationId: async (conversationId: string) => {
     const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId);
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", conversationId);
     if (error) {
       console.error(error);
-      toast.error('Failed to fetch messages');
+      toast.error("Failed to fetch messages");
       return [];
     } else {
       set({ messages: [...get().messages, ...data] });
@@ -189,26 +233,44 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     }
   },
   createMessage: async (message: CreateMessagePayload) => {
-    const { data, error } = await supabase.from('messages').insert(message);
+    const { data, error } = await supabase.from("messages").insert(message);
     if (error) {
       console.error(error);
-      toast.error('Failed to create message');
+      toast.error("Failed to create message");
     }
   },
-  addMessage: (message: Message) => 
-    set(state => ({
-      messages: [...state.messages, message]
+  addMessage: (message: Message) =>
+    set((state) => ({
+      messages: [...state.messages, message],
     })),
-}));  
+  updateMessage: (message: Message) =>
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg.id === message.id ? message : msg
+      ),
+    })),
+}));
 
 export const useTagsStore = create<TagsState>((set) => ({
   tags: [],
   fetchTags: async () => {
-    const { data, error } = await supabase.from('tags').select('*');
+    const { data, error } = await supabase.from("tags").select("*");
     if (error) {
       console.error(error);
     } else {
       set({ tags: data || [] });
+    }
+  },
+}));
+
+export const useRolesStore = create<RolesState>((set) => ({
+  roles: [],
+  fetchRoles: async () => {
+    const { data, error } = await supabase.from("roles").select("*");
+    if (error) {
+      console.error(error);
+    } else {
+      set({ roles: data || [] });
     }
   },
 }));

@@ -5,7 +5,7 @@
 ### users
 - id (uuid, PK, references auth.users.id)
 - created_at (timestamptz)
-- display_name (text)
+- full_name (text)
 - org_id (uuid, FK references orgs.id)
 - role_id (uuid, FK references roles.id)
 - email (text)

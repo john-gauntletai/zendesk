@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router";
 import { Toaster } from "react-hot-toast";
 import "./index.css";
 import SignIn from "./components/SignIn.tsx";
+import NewUserResetPassword from "./components/NewUserResetPassword.tsx";
 import Inbox from "./components/Inbox/Inbox.tsx";
 import Reports from "./components/Reports/Reports.tsx";
 import KnowledgeBase from "./components/KnowledgeBase/KnowledgeBase.tsx";
@@ -38,6 +39,7 @@ createRoot(document.getElementById("root")!).render(
           </Route>
           <Route path="reports" element={<Reports />} />
           <Route path="knowledge-base" element={<KnowledgeBase />} />
+          <Route path="new-user-reset-password" element={<NewUserResetPassword />} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/login" element={<SignIn />} />

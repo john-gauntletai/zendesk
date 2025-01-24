@@ -1,10 +1,16 @@
 export interface User {
   id: string;
   created_at: string;
-  display_name: string;
+  full_name: string;
   org_id: string;
   role_id: string;
   email: string;
+}
+
+export interface Role {
+  id: string;
+  created_at: string;
+  name: string;
 }
 
 export interface CreateMessagePayload {

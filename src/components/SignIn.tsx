@@ -79,7 +79,7 @@ const SignIn = () => {
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${import.meta.env.VITE_SUPABASE_REDIRECT_URL}`,
+            emailRedirectTo: `${window.location.origin}/login`,
             data: {
               full_name: formData.full_name,
             }
