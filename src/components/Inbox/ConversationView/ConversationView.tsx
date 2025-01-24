@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
+import { EnvelopeIcon, ChatBubbleLeftIcon, PlusIcon } from "@heroicons/react/24/solid";
 import Avatar from "../../__shared/Avatar";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -9,13 +9,21 @@ import {
   useSessionStore,
   useMessageStore,
   useConversationStore,
+  useTagsStore,
 } from "../../../store";
+import { Tag } from "../../../types";
+import toast from "react-hot-toast";
+import TagList from "../../TagList";
+import ConversationStatusBadge from "../../ConversationStatusBadge";
 
 const ConversationView = () => {
   const [messageInput, setMessageInput] = useState("");
-  const { conversations, selectedConversationId } = useConversationStore();
+  const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
+  const [tagSearch, setTagSearch] = useState("");
+  const { conversations, selectedConversationId, updateConversation, addTagToConversation } = useConversationStore();
   const { messages } = useMessageStore();
   const { session } = useSessionStore();
+  const { tags } = useTagsStore();
 
   if (!selectedConversationId) {
     return (
@@ -69,6 +77,20 @@ const ConversationView = () => {
 
   const lastMessage = conversationMessages[conversationMessages.length - 1];
 
+  const handleAddTag = async (tag: Tag) => {
+    if (!conversation) return;
+    
+    await addTagToConversation(conversation.id, tag.id);
+
+    setIsTagSelectorOpen(false);
+    setTagSearch("");
+  };
+
+  const filteredTags = tags.filter(tag => 
+    tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+    !conversation?.tags?.some(t => t.id === tag.id)
+  );
+
   return (
     <div className="flex flex-1 bg-base-100 border-l-2 border-base-300 shadow-sm transition-all">
       <div className="flex flex-1 flex-col">
@@ -91,29 +113,14 @@ const ConversationView = () => {
                   })}{" "}
                 • {lastMessage?.content || "No messages"}
               </div>
-              <div className="flex gap-2 mt-2">
-                {conversation.tags?.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2 py-0.5 bg-base-200 text-base-content/70 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              <div className="mt-2">
+                <TagList conversation={conversation} showAddButton />
               </div>
             </div>
 
             {/* Status & Assignment Column */}
             <div className="flex-shrink-0 flex flex-col items-end gap-2">
-              <span
-                className={`text-xs px-2 py-0.5 rounded-lg capitalize font-bold ${
-                  conversation.status === "open"
-                    ? "bg-error/20 text-error"
-                    : "bg-success/20 text-success"
-                }`}
-              >
-                {conversation.status}
-              </span>
+              <ConversationStatusBadge conversation={conversation} />
               {conversation.assigned_to && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-base-content/60">

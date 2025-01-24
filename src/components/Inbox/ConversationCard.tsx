@@ -2,6 +2,8 @@ import { Message, Customer, Conversation } from "../../types";
 import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { format, isWithinInterval, subDays, subHours } from "date-fns";
 import Avatar from "../__shared/Avatar";
+import TagList from "../TagList";
+import ConversationStatusBadge from "../ConversationStatusBadge";
 
 interface ConversationCardProps {
   conversation: Conversation;
@@ -55,7 +57,7 @@ const ConversationCard = ({
       ? message.content.substring(0, 100) + "..."
       : message.content;
   };
-
+  console.log(conversation.tags);
   return (
     <div
       onClick={onClick}
@@ -63,9 +65,9 @@ const ConversationCard = ({
         isSelected ? "border-2 border-primary" : "border-2 border-base-300"
       }`}
     >
-      <div className="flex">
-        {/* Avatar Column with Channel Icon Overlay */}
-        <div className="flex-shrink-0 w-8 flex items-center justify-center">
+      <div className="flex gap-3">
+        {/* Column 1: Avatar with Channel Icon */}
+        <div className="flex-shrink-0 flex items-center justify-center">
           <div className="relative">
             <Avatar user={customer} size={32} />
             <div className="absolute -bottom-1 -right-1">
@@ -74,27 +76,31 @@ const ConversationCard = ({
           </div>
         </div>
 
-        {/* Content Column */}
-        <div className="flex-1 min-w-0 ml-3">
-          {/* Customer Name and Subject Line */}
+        {/* Column 2: Customer Info and Message */}
+        <div className="flex-1 min-w-0">
           <div className="text-sm font-bold">
             {customer?.full_name || "Unknown Customer"}
           </div>
 
           <div className="text-sm">
-            {conversation.title || "No subject"}
+            {conversation.subject || "No subject"}
           </div>
 
-          {/* Last Message and Timestamp */}
-          <div className="flex items-start justify-between">
-            <div className="text-sm text-base-content/60 line-clamp-1 flex-1">
-              {getPreviewText(lastMessage)}
-            </div>
-            <div className="text-[13px] text-base-content/50 ml-4 whitespace-nowrap">
-              {formatLastUpdated(new Date(conversation.created_at))}
-            </div>
+          <div className="text-sm text-base-content/60 line-clamp-1">
+            {getPreviewText(lastMessage)}
           </div>
         </div>
+
+        {/* Column 3: Status and Timestamp */}
+        <div className="flex-shrink-0 flex flex-col justify-between items-end">
+          <ConversationStatusBadge conversation={conversation} />
+          <div className="text-[13px] text-base-content/50 whitespace-nowrap">
+            {formatLastUpdated(new Date(conversation.created_at))}
+          </div>
+        </div>
+      </div>
+      <div className="mt-2">
+        <TagList conversation={conversation} />
       </div>
     </div>
   );

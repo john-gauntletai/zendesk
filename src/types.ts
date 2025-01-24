@@ -34,10 +34,12 @@ export interface Message {
 export interface Conversation {
   id: string;
   created_at: string;
-  org_id: string;
+  subject: string;
+  status: string; 
   channel: string;
   customer_id: string;
-  status: string;
+  assigned_to?: string;
+  tags?: Tag[];
 }
 
 export interface Tag {

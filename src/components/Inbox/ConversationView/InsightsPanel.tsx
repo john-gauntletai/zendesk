@@ -1,5 +1,7 @@
 import { useCustomerStore, useConversationStore } from "../../../store";
 import Avatar from "../../__shared/Avatar";
+import TagList from "../../TagList";
+import ConversationStatusBadge from "../../ConversationStatusBadge";
 
 const InsightsPanel = () => {
   const { customers } = useCustomerStore();
@@ -27,7 +29,7 @@ const InsightsPanel = () => {
       {/* Customer Section */}
       <div className="p-4 border-b border-base-300">
         <h3 className="text-sm font-medium mb-4">Customer</h3>
-        
+
         <div className="flex items-center gap-3 mb-4">
           <Avatar user={customer} size={40} />
           <div>
@@ -53,9 +55,7 @@ const InsightsPanel = () => {
           {customer.created_at && (
             <div className="text-sm">
               <span className="text-base-content/60">Customer since:</span>{" "}
-              <span>
-                {new Date(customer.created_at).toLocaleDateString()}
-              </span>
+              <span>{new Date(customer.created_at).toLocaleDateString()}</span>
             </div>
           )}
         </div>
@@ -64,22 +64,16 @@ const InsightsPanel = () => {
       {/* Conversation Attributes Section */}
       <div className="p-4">
         <h3 className="text-sm font-medium mb-4">Conversation</h3>
-        
+
         <div className="space-y-2">
           <div className="text-sm">
             <span className="text-base-content/60">Channel:</span>{" "}
             <span className="capitalize">{selectedConversation.channel}</span>
           </div>
-          
+
           <div className="text-sm">
             <span className="text-base-content/60">Status:</span>{" "}
-            <span className={`capitalize ${
-              selectedConversation.status === 'open' 
-                ? 'text-error' 
-                : 'text-success'
-            }`}>
-              {selectedConversation.status}
-            </span>
+            <ConversationStatusBadge conversation={selectedConversation} />
           </div>
 
           <div className="text-sm">
@@ -96,21 +90,15 @@ const InsightsPanel = () => {
             </div>
           )}
 
-          {selectedConversation.tags && selectedConversation.tags.length > 0 && (
-            <div className="text-sm">
-              <div className="text-base-content/60 mb-1">Tags:</div>
-              <div className="flex flex-wrap gap-1">
-                {selectedConversation.tags.map(tag => (
-                  <span 
-                    key={tag}
-                    className="text-xs px-2 py-0.5 bg-base-200 text-base-content/70 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
+          {selectedConversation.tags &&
+            selectedConversation.tags.length > 0 && (
+              <div className="text-sm">
+                <div className="text-base-content/60 mb-1">Tags:</div>
+                <div className="flex flex-wrap gap-1">
+                  <TagList conversation={selectedConversation} showAddButton />
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

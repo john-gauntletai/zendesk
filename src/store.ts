@@ -177,10 +177,10 @@ export const useConversationStore = create<ConversationState>((set) => ({
     set((state) => ({
       conversations: [...state.conversations, conversation],
     })),
-  updateConversation: (conversation: Conversation) =>
+  updateConversation: (updatedConversation: Conversation) =>
     set((state) => ({
       conversations: state.conversations.map((conv) =>
-        conv.id === conversation.id ? conversation : conv
+        conv.id === updatedConversation.id ? updatedConversation : conv
       ),
     })),
   updateConversationStatus: async (conversationId: string, status: string) => {
@@ -203,6 +203,16 @@ export const useConversationStore = create<ConversationState>((set) => ({
             : state.selectedConversation,
       }));
       toast.success(`Conversation ${status}`);
+    }
+  },
+  addTagToConversation: async (conversationId: string, tagId: string) => {
+    const {data, error} = await supabase.from('conversations_tags').insert({
+      conversation_id: conversationId,
+      tag_id: tagId,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Failed to add tag to conversation");
     }
   },
 }));
