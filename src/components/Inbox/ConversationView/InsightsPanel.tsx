@@ -23,7 +23,7 @@ const InsightsPanel = () => {
   }
 
   return (
-    <div className="w-80 border-l-2 border-base-300 bg-base-100 flex-shrink-0">
+    <div className="w-80 border-l-2 border-base-300 flex-shrink-0">
       {/* Customer Section */}
       <div className="p-4 border-b border-base-300">
         <h3 className="text-sm font-medium mb-4">Customer</h3>

@@ -8,7 +8,8 @@ interface MessageInputProps {
 
 const MessageInput = ({ value, onChange, onSubmit }: MessageInputProps) => {
   return (
-    <div className="flex items-center gap-2 p-2 border-t border-base-300 relative" 
+    <div 
+      className="flex-shrink-0 flex items-center gap-2 p-2 border-t border-base-300 bg-base-100 sticky bottom-0" 
       style={{ boxShadow: '0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1)' }}
     >
       <input

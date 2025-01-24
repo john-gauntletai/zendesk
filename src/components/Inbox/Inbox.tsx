@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import supabase from "../../supabase";
 import {
   useCustomerStore,
   useConversationStore,
   useMessageStore,
   useSessionStore,
 } from "../../store";
-import { Conversation, Message, Customer } from "../../types";
+import { Conversation } from "../../types";
 import InboxSidebar from "./InboxSidebar";
 import ConversationCard from "./ConversationCard";
-import Timeline from "./Timeline/Timeline";
-import InsightsPanel from "./InsightsPanel/InsightsPanel";
+import ConversationView from "./ConversationView/ConversationView";
 
 const Inbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -102,7 +100,7 @@ const Inbox = () => {
       />
 
       {/* Main Content Area */}
-      <div className="pl-2 pt-1">
+      <div className="px-2 pt-1">
         <div className="overflow-y-auto space-y-1">
           {filteredConversations.map((conversation) => {
             const customer = customers.find(
@@ -133,8 +131,7 @@ const Inbox = () => {
           )}
         </div>
       </div>
-      <Timeline />
-      {selectedConversationId && <InsightsPanel />}
+      <ConversationView />
     </div>
 
 );

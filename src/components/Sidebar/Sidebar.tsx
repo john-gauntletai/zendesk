@@ -39,7 +39,7 @@ const Sidebar = () => {
       {/* Logo */}
       <div className="mb-8">
         <Link 
-          to="/" 
+          to="/inbox" 
           className="text-gray-400 hover:text-white transition-colors"
           data-tip="Home"
         >
