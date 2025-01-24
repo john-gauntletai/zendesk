@@ -145,13 +145,12 @@ export const useCustomerStore = create<CustomerState>((set) => ({
     })),
 }));
 
-export const useConversationStore = create<ConversationState>((set) => ({
+export const useConversationStore = create<ConversationState>((set, get) => ({
   conversations: [],
   fetchConversations: async () => {
     const { data, error } = await supabase
       .from("conversations")
       .select("*, tags(*)")
-      .eq("org_id", "b6a0fc05-e31c-4b0d-a987-345c8b6e05ad");
     if (error) {
       console.error(error);
     } else {
@@ -161,13 +160,17 @@ export const useConversationStore = create<ConversationState>((set) => ({
   fetchConversationById: async (conversationId: string) => {
     const { data, error } = await supabase
       .from("conversations")
-      .select("*")
+      .select("*, tags(*)")
       .eq("id", conversationId)
       .single();
     if (error) {
       console.error(error);
     } else {
-      set({ selectedConversation: data });
+      set({
+        conversations: get().conversations.map((conv) =>
+          conv.id === conversationId ? data : conv
+        ),
+      });
     }
   },
   selectedConversationId: null,
@@ -213,6 +216,14 @@ export const useConversationStore = create<ConversationState>((set) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to add tag to conversation");
+    }
+  },
+  removeTagFromConversation: async (conversationId: string, tagId: string) => {
+    const {data, error} = await supabase.from('conversations_tags').delete().eq('conversation_id', conversationId).eq('tag_id', tagId);
+    console.log("data", data);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to remove tag from conversation");
     }
   },
 }));
@@ -271,6 +282,18 @@ export const useTagsStore = create<TagsState>((set) => ({
       set({ tags: data || [] });
     }
   },
+  addTag: (tag: Tag) =>
+    set((state) => ({
+      tags: [...state.tags, tag],
+    })),
+  updateTag: (tag: Tag) =>
+    set((state) => ({
+      tags: state.tags.map((t) => (t.id === tag.id ? tag : t)),
+    })),
+  removeTag: (tagId: string) =>
+    set((state) => ({
+      tags: state.tags.filter((t) => t.id !== tagId),
+    })),
 }));
 
 export const useRolesStore = create<RolesState>((set) => ({

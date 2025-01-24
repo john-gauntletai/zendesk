@@ -57,7 +57,6 @@ const ConversationCard = ({
       ? message.content.substring(0, 100) + "..."
       : message.content;
   };
-  console.log(conversation.tags);
   return (
     <div
       onClick={onClick}

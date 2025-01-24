@@ -30,7 +30,6 @@ serve(async (req) => {
           }
         );
       }
-      console.log('User created successfully', data);
       return new Response(
         JSON.stringify({ message: 'User created successfully', data }),
         {

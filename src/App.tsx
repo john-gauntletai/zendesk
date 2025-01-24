@@ -13,7 +13,7 @@ import {
 import LandingPage from "./components/LandingPage";
 import Sidebar from "./components/Sidebar/Sidebar";
 import "./App.css";
-import { Message, User, Conversation, Customer } from "./types";
+import { Message, User, Conversation, Customer, Tag } from "./types";
 
 function App() {
   const { isLoading, session, fetchSession } = useSessionStore();
@@ -24,9 +24,10 @@ function App() {
     addConversation,
     conversations,
     updateConversation,
+    fetchConversationById,
   } = useConversationStore();
   const { fetchMessages, addMessage, updateMessage } = useMessageStore();
-  const { fetchTags } = useTagsStore();
+  const { fetchTags, addTag, removeTag, updateTag } = useTagsStore();
   const { fetchRoles } = useRolesStore();
 
   // Initial data fetch
@@ -80,7 +81,8 @@ function App() {
         }
       )
       .subscribe();
-
+    
+      
     const usersSubscription = supabase
       .channel("users")
       .on(
@@ -153,7 +155,6 @@ function App() {
     if (!conversations.length || !session) {
       return;
     }
-
     const messagesSubscription = supabase
       .channel("messages")
       .on(
@@ -192,6 +193,99 @@ function App() {
       messagesSubscription.unsubscribe();
     };
   }, [conversations, session]);
+
+  // Tags subscription
+  useEffect(() => {
+    if (!session) return;
+
+    console.log('Setting up tags subscriptions');
+    
+    const tagsSubscription = supabase
+      .channel("tags")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "tags",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const newTag = payload.new as Tag;
+          addTag(newTag);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tags",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const updatedTag = payload.new as Tag;
+          updateTag(updatedTag);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "tags",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const deletedTag = payload.old as Tag;
+          removeTag(deletedTag);
+        }
+      );
+
+    const conversationsTagsSubscription = supabase
+      .channel("conversations_tags")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "conversations_tags",
+          filter: `conversation_id=in.(${conversations.map((c) => c.id).join(",")})`,
+        },
+        (payload) => {
+          const newConversationTag = payload.new as ConversationTag;
+          fetchConversationById(newConversationTag.conversation_id);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "conversations_tags",
+          filter: `conversation_id=in.(${conversations.map((c) => c.id).join(",")})`,
+        },
+        (payload) => {
+          const deletedConversationTag = payload.old as ConversationTag;
+          fetchConversationById(deletedConversationTag.conversation_id);
+        }
+      );
+
+    // Subscribe and log status
+    tagsSubscription.subscribe((status) => {
+      console.log('Tags subscription status:', status);
+    });
+
+    conversationsTagsSubscription.subscribe((status) => {
+      console.log('Conversations tags subscription status:', status);
+    });
+
+    return () => {
+      console.log('Cleaning up tags subscriptions');
+      tagsSubscription.unsubscribe();
+      conversationsTagsSubscription.unsubscribe();
+    };
+  }, [session, conversations]);
 
   // Auth state change listener
   useEffect(() => {

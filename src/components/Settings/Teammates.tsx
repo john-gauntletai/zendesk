@@ -37,7 +37,6 @@ const Teammates = () => {
   const handleInviteTeammates = async (emails: string[]) => {
     try {
       const agentRole = roles.find(r => r.name.toLowerCase() === 'agent');
-      console.log('agentRole', agentRole);
       if (!agentRole) throw new Error("Agent role not found");
 
       for (const email of emails) {
@@ -49,7 +48,6 @@ const Teammates = () => {
           }
         });
 
-        console.log('authUser response:', authUser);
         if (inviteError) throw inviteError;
 
         // Update user in public.users
@@ -57,8 +55,7 @@ const Teammates = () => {
           org_id: session?.org_id,
           role_id: agentRole.id,
         };
-        console.log('Updating user with payload:', updatePayload);
-        console.log('For user ID:', authUser.data.user.id);
+
 
         const { data: updateData, error: userError } = await supabase
           .from('users')
@@ -69,7 +66,6 @@ const Teammates = () => {
           .eq('id', authUser.data.user.id)
           .select();  // Add this to get the response data
 
-        console.log('Update response:', { data: updateData, error: userError });
 
         if (userError) {
           console.error('Update error details:', userError);
