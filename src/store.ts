@@ -150,7 +150,7 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
   fetchConversations: async () => {
     const { data, error } = await supabase
       .from("conversations")
-      .select("*, tags(*)")
+      .select("*, tags(*)");
     if (error) {
       console.error(error);
     } else {
@@ -180,36 +180,35 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     set((state) => ({
       conversations: [...state.conversations, conversation],
     })),
-  updateConversation: (updatedConversation: Conversation) =>
+  receiveConversationUpdate: (updatedConversation: Conversation) =>
     set((state) => ({
       conversations: state.conversations.map((conv) =>
         conv.id === updatedConversation.id ? updatedConversation : conv
       ),
     })),
-  updateConversationStatus: async (conversationId: string, status: string) => {
+  updateConversation: async (
+    conversationId: string,
+    payload: Partial<Conversation>
+  ) => {
     const { data, error } = await supabase
       .from("conversations")
-      .update({ status })
+      .update(payload)
       .eq("id", conversationId);
 
     if (error) {
       console.error(error);
-      toast.error("Failed to update conversation status");
-    } else {
-      set((state) => ({
-        conversations: state.conversations.map((conv) =>
-          conv.id === conversationId ? { ...conv, status } : conv
-        ),
-        selectedConversation:
-          state.selectedConversation?.id === conversationId
-            ? { ...state.selectedConversation, status }
-            : state.selectedConversation,
-      }));
-      toast.success(`Conversation ${status}`);
+      toast.error("Failed to update conversation");
+      return;
     }
+
+    set((state) => ({
+      conversations: state.conversations.map((conv) =>
+        conv.id === conversationId ? { ...conv, ...payload } : conv
+      ),
+    }));
   },
   addTagToConversation: async (conversationId: string, tagId: string) => {
-    const {data, error} = await supabase.from('conversations_tags').insert({
+    const { data, error } = await supabase.from("conversations_tags").insert({
       conversation_id: conversationId,
       tag_id: tagId,
     });
@@ -219,7 +218,11 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     }
   },
   removeTagFromConversation: async (conversationId: string, tagId: string) => {
-    const {data, error} = await supabase.from('conversations_tags').delete().eq('conversation_id', conversationId).eq('tag_id', tagId);
+    const { data, error } = await supabase
+      .from("conversations_tags")
+      .delete()
+      .eq("conversation_id", conversationId)
+      .eq("tag_id", tagId);
     console.log("data", data);
     if (error) {
       console.error(error);

@@ -14,7 +14,7 @@ const ConversationStatusBadge = ({ conversation }: ConversationStatusBadgeProps)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLSpanElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { updateConversationStatus } = useConversationStore();
+  const { updateConversation } = useConversationStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,7 +52,7 @@ const ConversationStatusBadge = ({ conversation }: ConversationStatusBadgeProps)
   }, [isOpen]);
 
   const handleStatusChange = async (status: string) => {
-    await updateConversationStatus(conversation.id, status);
+    await updateConversation(conversation.id, { status });
     setIsOpen(false);
   };
 

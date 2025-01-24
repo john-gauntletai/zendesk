@@ -23,7 +23,7 @@ function App() {
     fetchConversations,
     addConversation,
     conversations,
-    updateConversation,
+    receiveConversationUpdate,
     fetchConversationById,
   } = useConversationStore();
   const { fetchMessages, addMessage, updateMessage } = useMessageStore();
@@ -77,7 +77,7 @@ function App() {
         },
         (payload) => {
           const updatedConversation = payload.new as Conversation;
-          updateConversation(updatedConversation);
+          receiveConversationUpdate(updatedConversation);
         }
       )
       .subscribe();
