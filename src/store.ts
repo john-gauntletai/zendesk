@@ -41,6 +41,11 @@ interface MessageState {
   addMessage: (message: Message) => void;
 }
 
+interface TagsState {
+  tags: Tag[];
+  fetchTags: () => Promise<void>;
+}
+
 export const useSessionStore = create<SessionState>((set) => ({
   isLoading: true,
   session: null,
@@ -110,7 +115,7 @@ export const useCustomerStore = create<CustomerState>((set) => ({
 export const useConversationStore = create<ConversationState>((set) => ({
   conversations: [],
   fetchConversations: async () => {
-    const { data, error } = await supabase.from('conversations').select('*').eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
+    const { data, error } = await supabase.from('conversations').select('*, tags(*)').eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad');
     if (error) {
       console.error(error);
     } else {
@@ -195,3 +200,15 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       messages: [...state.messages, message]
     })),
 }));  
+
+export const useTagsStore = create<TagsState>((set) => ({
+  tags: [],
+  fetchTags: async () => {
+    const { data, error } = await supabase.from('tags').select('*');
+    if (error) {
+      console.error(error);
+    } else {
+      set({ tags: data || [] });
+    }
+  },
+}));

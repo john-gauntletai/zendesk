@@ -34,6 +34,16 @@ export interface Conversation {
   status: string;
 }
 
+export interface Tag {
+  id: string;
+  created_at: string;
+  name: string;
+  background_color: string;
+  text_color: string;
+  org_id: string;
+  created_by: string;
+}
+
 export interface Customer {
   id: string;
   created_at: string;

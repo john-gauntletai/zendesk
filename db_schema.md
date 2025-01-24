@@ -29,12 +29,26 @@
 - status (text)
 - assigned_to (uuid, FK references users.id)
 
+### tags
+- id (uuid, PK)
+- created_at (timestamptz)
+- name (text)
+- background_color (text)
+- text_color (text)
+- org_id (uuid, FK references orgs.id)
+- created_by (uuid, FK references users.id)
+
+### conversations_tags
+- conversation_id (uuid, FK references conversations.id)
+- tag_id (uuid, FK references tags.id)
+
 ### customers
 - id (uuid, PK)
 - created_at (timestamptz)
 - full_name (text)
 - email (text)
 - org_id (uuid, FK references orgs.id)
+- avatar_url (text)
 
 ### orgs
 - id (uuid, PK)
@@ -55,3 +69,7 @@
 - conversations.org_id -> orgs.id
 - conversations.customer_id -> customers.id
 - customers.org_id -> orgs.id
+- conversations_tags.conversation_id -> conversations.id
+- conversations_tags.tag_id -> tags.id
+- tags.org_id -> orgs.id
+- tags.created_by -> users.id
