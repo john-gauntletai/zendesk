@@ -249,6 +249,7 @@ function App() {
           filter: `conversation_id=in.(${conversations.map((c) => c.id).join(",")})`,
         },
         (payload) => {
+          console.log('New conversation tag:', payload.new);
           const newConversationTag = payload.new as ConversationTag;
           fetchConversationById(newConversationTag.conversation_id);
         }

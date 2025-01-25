@@ -227,6 +227,8 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to add tag to conversation");
+    } else {
+      useConversationStore.getState().fetchConversationById(conversationId);
     }
   },
   removeTagFromConversation: async (conversationId: string, tagId: string) => {
@@ -239,6 +241,8 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to remove tag from conversation");
+    } else {
+      useConversationStore.getState().fetchConversationById(conversationId);
     }
   },
 }));
