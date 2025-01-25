@@ -95,7 +95,7 @@ const Inbox = () => {
       />
 
       {/* Main Content Area */}
-      <div className="px-2 pt-1 overflow-y-auto space-y-1">
+      <div className="px-2 pt-1 overflow-y-auto space-y-1 flex-shrink-0">
         {[...filteredConversations]
           .sort(
             (a, b) =>
@@ -125,8 +125,11 @@ const Inbox = () => {
           })}
 
         {filteredConversations.length === 0 && (
-          <div className="p-8 text-center text-base-content/70">
-            No conversations found
+          <div className="w-80 flex-shrink-0 h-full flex flex-col items-center justify-center text-center text-base-content/70 space-y-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <span>No conversations found</span>
           </div>
         )}
       </div>
