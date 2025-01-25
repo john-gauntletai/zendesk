@@ -4,6 +4,7 @@ import { format, isWithinInterval, subDays, subHours } from "date-fns";
 import Avatar from "../__shared/Avatar";
 import TagList from "../TagList";
 import ConversationStatusBadge from "../ConversationStatusBadge";
+import { useUserStore } from "../../store";
 
 interface ConversationCardProps {
   conversation: Conversation;
@@ -20,6 +21,9 @@ const ConversationCard = ({
   isSelected,
   onClick,
 }: ConversationCardProps) => {
+  const { users } = useUserStore();
+  const assignedUser = users.find(u => u.id === conversation.assigned_to);
+
   const getChannelIcon = (channel: string) => {
     switch (channel?.toLowerCase()) {
       case "email":
@@ -98,8 +102,13 @@ const ConversationCard = ({
           </div>
         </div>
       </div>
-      <div className="mt-2">
+      <div className="flex gap-2 mt-2 items-center justify-between">
         <TagList conversation={conversation} />
+        {assignedUser && (
+          <div className="flex-shrink-0">
+            <Avatar user={assignedUser} size={24} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -102,6 +102,8 @@ const ConversationView = () => {
     (m) => m.conversation_id === selectedConversationId
   );
 
+  const assignedUser = users.find(u => u.id === conversation?.assigned_to);
+
   const getChannelIcon = (channel: string) => {
     switch (channel?.toLowerCase()) {
       case "email":
@@ -181,7 +183,7 @@ const ConversationView = () => {
             </div>
 
             {/* Status & Assignment Column */}
-            <div className="flex-shrink-0 flex flex-col items-end gap-2">
+            <div className="flex-shrink-0 flex flex-col justify-between items-end gap-2">
               <ConversationStatusBadge conversation={conversation} />
               
               <div 
@@ -203,16 +205,16 @@ const ConversationView = () => {
               >
                 {conversation.assigned_to ? (
                   <>
-                    <span className="text-xs text-base-content/60">Assigned to</span>
+                    <span className="text-sm text-base-content/60">Assigned to</span>
                     <div className="flex items-center gap-1">
-                      <Avatar user={{ id: conversation.assigned_to }} size={16} />
-                      <span className="text-xs">{conversation.assigned_to}</span>
+                      <Avatar user={assignedUser} size={16} />
+                      <span className="text-sm">{assignedUser?.full_name}</span>
                     </div>
                   </>
                 ) : (
                   <div className="flex items-center gap-1 text-base-content/60">
                     <UserCircleIcon className="w-4 h-4" />
-                    <span className="text-xs">Assign</span>
+                    <span className="text-sm">Assign</span>
                   </div>
                 )}
               </div>

@@ -102,7 +102,9 @@ const Inbox = () => {
       {/* Main Content Area */}
       <div className="px-2 pt-1">
         <div className="overflow-y-auto space-y-1">
-          {filteredConversations.map((conversation) => {
+          {[...filteredConversations]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .map((conversation) => {
             const customer = customers.find(
               (c) => c.id === conversation.customer_id
             );
