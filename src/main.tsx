@@ -48,7 +48,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="new-user-reset-password" element={<NewUserResetPassword />} />
           <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="/login" element={<SignIn />} />
+        <Route path="/login" element={<SignIn isSignInProp />} />
+        <Route path="/signup" element={<SignIn />} />
         <Route path="/avengers-hotline" element={<AvengersHotline />} />
       </Routes>
     </BrowserRouter>

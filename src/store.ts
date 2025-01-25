@@ -83,11 +83,10 @@ export const useSessionStore = create<SessionState>((set) => ({
       if (error || userError) {
         throw new Error("Failed to fetch session");
       }
-      set({ session: userData });
+      set({ isLoading: false, session: userData });
     } catch (error) {
       console.error(error);
-    } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, session: null });
     }
   },
   logout: async () => {
@@ -96,7 +95,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       console.error(error);
     } else {
       set({ session: null });
-      window.location.href = "/login";
+      window.location.href = "/";
     }
   },
 }));

@@ -8,7 +8,6 @@ import {
   ChartBarIcon,
   BookOpenIcon,
   Cog6ToothIcon,
-  ChevronDownIcon,
   CommandLineIcon,
   ArrowRightStartOnRectangleIcon,
   UserCircleIcon,

@@ -39,9 +39,9 @@ const getRandomQuote = () => {
 // Select one quote that will be used for the entire session
 const staticQuote = getRandomQuote();
 
-const SignIn = () => {
+const SignIn = ({ isSignInProp }: { isSignInProp?: boolean }) => {
   const navigate = useNavigate();
-  const [isSignIn, setIsSignIn] = useState(true);
+  const [isSignIn, setIsSignIn] = useState(!!isSignInProp);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [formData, setFormData] = useState({

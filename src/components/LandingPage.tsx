@@ -34,11 +34,14 @@ const LandingPage = () => {
             <Link to="/pricing" className="text-sm text-gray-400 hover:text-white">
               Pricing
             </Link>
+            <Link to="/login" className="text-sm text-gray-400 hover:text-white">
+              Login
+            </Link>
             <Link 
-              to="/login" 
+              to="/signup" 
               className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-full border border-gray-800 hover:border-gray-700"
             >
-              Sign In
+              Sign Up
             </Link>
           </div>
         </div>
@@ -60,16 +63,16 @@ const LandingPage = () => {
           </p>
           <div className="flex items-center gap-4">
             <Link 
-              to="/login" 
+              to="/signup" 
               className="px-6 py-3 text-sm font-medium bg-white text-black rounded-full hover:bg-gray-100"
             >
-              Sign In
+              Sign Up
             </Link>
             <Link 
-              to="/features" 
+              to="/avengers-hotline" 
               className="px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-full border border-gray-800 hover:border-gray-700"
             >
-              View features →
+              Go To Avengers Hotline
             </Link>
           </div>
         </div>

@@ -291,7 +291,7 @@ function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
-        window.location.href = "/login";
+        window.location.href = "/";
       }
     });
 
