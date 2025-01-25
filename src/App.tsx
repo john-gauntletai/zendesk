@@ -11,6 +11,7 @@ import {
   useRolesStore,
 } from "./store";
 import LandingPage from "./components/LandingPage";
+import Onboarding from "./components/Onboarding";
 import Sidebar from "./components/Sidebar/Sidebar";
 import "./App.css";
 import { Message, User, Conversation, Customer, Tag } from "./types";
@@ -311,6 +312,7 @@ function App() {
     <div className="flex">
       <Sidebar />
       <div className="flex-1">
+        <Onboarding />
         <Outlet />
       </div>
     </div>

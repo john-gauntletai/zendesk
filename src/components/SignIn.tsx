@@ -79,7 +79,7 @@ const SignIn = () => {
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/login`,
+            emailRedirectTo: `${window.location.origin}`,
             data: {
               full_name: formData.full_name,
             }
