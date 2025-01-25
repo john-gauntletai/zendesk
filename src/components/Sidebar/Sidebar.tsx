@@ -144,7 +144,7 @@ const Sidebar = () => {
           className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors relative"
           data-tip={session?.full_name}
         >
-          <Avatar user={session} size={24} />
+          <Avatar user={session} size={24} showTooltip={false} />
         </button>
       </div>
 

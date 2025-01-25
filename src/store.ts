@@ -27,9 +27,7 @@ interface UserState {
 
 interface CustomerState {
   customers: Customer[];
-  fetchCustomers: () => Promise<void>;
-  selectedCustomerId: string | null;
-  setSelectedCustomerId: (customerId: string | null) => void;
+  fetchCustomers: (orgId: string) => Promise<void>;
   addCustomer: (customer: Customer) => void;
   updateCustomer: (customer: Customer) => void;
 }
@@ -40,7 +38,7 @@ interface ConversationState {
   fetchConversationById: (conversationId: string) => Promise<void>;
   selectedConversationId: string | null;
   setSelectedConversationId: (conversationId: string | null) => void;
-  addConversation: (conversation: Conversation) => void;
+  receiveConversationUpdate: (updatedConversation: Conversation) => void;
   updateConversation: (conversation: Conversation) => void;
   updateConversationStatus: (
     conversationId: string,
@@ -60,6 +58,9 @@ interface MessageState {
 interface TagsState {
   tags: Tag[];
   fetchTags: () => Promise<void>;
+  addTag: (tag: Tag) => void;
+  updateTag: (tag: Tag) => void;
+  removeTag: (tagId: string) => void;
 }
 
 interface RolesState {
@@ -117,22 +118,19 @@ export const useUserStore = create<UserState>((set) => ({
     })),
 }));
 
-export const useCustomerStore = create<CustomerState>((set) => ({
+export const useCustomerStore = create<CustomerState>((set, get) => ({
   customers: [],
-  fetchCustomers: async () => {
+  fetchCustomers: async (orgId: string) => {
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .eq("org_id", "b6a0fc05-e31c-4b0d-a987-345c8b6e05ad");
+      .eq("org_id", orgId);
     if (error) {
       console.error(error);
     } else {
       set({ customers: data || [] });
     }
   },
-  selectedCustomerId: null,
-  setSelectedCustomerId: (customerId) =>
-    set({ selectedCustomerId: customerId }),
   addCustomer: (customer: Customer) =>
     set((state) => ({
       customers: [...state.customers, customer],
@@ -163,27 +161,41 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
       .select("*, tags(*)")
       .eq("id", conversationId)
       .single();
+
     if (error) {
       console.error(error);
-    } else {
-      set({
-        conversations: get().conversations.map((conv) =>
-          conv.id === conversationId ? data : conv
-        ),
-      });
+      return;
     }
+
+    set((state) => {
+      const existingIndex = state.conversations.findIndex(
+        (conv) => conv.id === conversationId
+      );
+
+      if (existingIndex === -1) {
+        // Conversation doesn't exist, add it to the array
+        return {
+          conversations: [...state.conversations, data],
+        };
+      } else {
+        // Conversation exists, replace it
+        const updatedConversations = [...state.conversations];
+        updatedConversations[existingIndex] = data;
+        return {
+          conversations: updatedConversations,
+        };
+      }
+    });
   },
   selectedConversationId: null,
   setSelectedConversationId: (conversationId) =>
     set({ selectedConversationId: conversationId }),
-  addConversation: (conversation: Conversation) =>
-    set((state) => ({
-      conversations: [...state.conversations, conversation],
-    })),
   receiveConversationUpdate: (updatedConversation: Conversation) =>
     set((state) => ({
       conversations: state.conversations.map((conv) =>
-        conv.id === updatedConversation.id ? updatedConversation : conv
+        conv.id === updatedConversation.id 
+          ? { ...conv, ...updatedConversation }
+          : conv
       ),
     })),
   updateConversation: async (
@@ -193,7 +205,8 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     const { data, error } = await supabase
       .from("conversations")
       .update(payload)
-      .eq("id", conversationId);
+      .eq("id", conversationId)
+      .select("*, tags(*)");
 
     if (error) {
       console.error(error);

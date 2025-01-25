@@ -21,7 +21,6 @@ function App() {
   const { fetchCustomers, addCustomer, updateCustomer } = useCustomerStore();
   const {
     fetchConversations,
-    addConversation,
     conversations,
     receiveConversationUpdate,
     fetchConversationById,
@@ -37,7 +36,7 @@ function App() {
 
   useEffect(() => {
     if (session) {
-      fetchCustomers();
+      fetchCustomers(session.org_id);
       fetchUsers();
       fetchConversations();
       fetchMessages();
@@ -64,7 +63,7 @@ function App() {
         },
         (payload) => {
           const newConversation = payload.new as Conversation;
-          addConversation(newConversation);
+          fetchConversationById(newConversation.id);
         }
       )
       .on(

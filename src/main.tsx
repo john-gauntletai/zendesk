@@ -19,6 +19,11 @@ import Tags from "./components/Settings/Tags";
 import Routing from "./components/Settings/Routing";
 import Subscription from "./components/Settings/Subscription";
 
+document.documentElement.setAttribute(
+  'data-theme', 
+  localStorage.getItem('theme') || 'light'
+);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />

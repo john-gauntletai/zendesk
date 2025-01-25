@@ -221,7 +221,6 @@ const ConversationView = () => {
               >
                 {conversation.assigned_to ? (
                   <>
-                    <span className="text-sm text-base-content/60">Assigned to</span>
                     <div className="flex items-center gap-1">
                       <Avatar user={assignedUser} size={16} />
                       <span className="text-sm">{assignedUser?.full_name}</span>
