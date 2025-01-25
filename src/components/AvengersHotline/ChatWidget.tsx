@@ -316,7 +316,8 @@ const ChatWidget = ({ userInfo, onUserInfoSubmit, customer }: ChatWidgetProps) =
         content,
         sender_id: customer.id,
         sender_type: 'customer',
-        attachments: null
+        attachments: null,
+        org_id: customer.org_id,
       })
       .select()
       .single();

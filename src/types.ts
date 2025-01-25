@@ -19,6 +19,7 @@ export interface CreateMessagePayload {
   attachments: any;
   sender_id: string;
   sender_type: 'user' | 'customer';
+  org_id: string;
 }
 
 export interface Message {

@@ -152,7 +152,7 @@ function App() {
 
   // Messages subscription
   useEffect(() => {
-    if (!conversations.length || !session) {
+    if (!session) {
       return;
     }
     const messagesSubscription = supabase
@@ -163,9 +163,7 @@ function App() {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=in.(${conversations
-            .map((c) => c.id)
-            .join(",")})`,
+          filter: `org_id=eq.${session.org_id}`,
         },
         (payload) => {
           const newMessage = payload.new as Message;
@@ -178,9 +176,7 @@ function App() {
           event: "UPDATE",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=in.(${conversations
-            .map((c) => c.id)
-            .join(",")})`,
+          filter: `org_id=eq.${session.org_id}`,
         },
         (payload) => {
           const updatedMessage = payload.new as Message;
@@ -192,7 +188,7 @@ function App() {
     return () => {
       messagesSubscription.unsubscribe();
     };
-  }, [conversations, session]);
+  }, [session]);
 
   // Tags subscription
   useEffect(() => {
@@ -271,17 +267,7 @@ function App() {
         }
       );
 
-    // Subscribe and log status
-    tagsSubscription.subscribe((status) => {
-      console.log('Tags subscription status:', status);
-    });
-
-    conversationsTagsSubscription.subscribe((status) => {
-      console.log('Conversations tags subscription status:', status);
-    });
-
     return () => {
-      console.log('Cleaning up tags subscriptions');
       tagsSubscription.unsubscribe();
       conversationsTagsSubscription.unsubscribe();
     };

@@ -128,6 +128,7 @@ const ConversationView = () => {
       attachments: [], // No attachments for now
       sender_id: session.id,
       sender_type: 'user',
+      org_id: session.org_id,
     };
 
     try {

@@ -144,11 +144,6 @@ const SignIn = ({ isSignInProp }: { isSignInProp?: boolean }) => {
         {/* Right side - Verification Panel */}
         <div className="flex items-center justify-center w-full p-8 lg:w-1/2 bg-base-200">
           <div className="w-full max-w-md">
-            <div className="mb-8 text-center">
-              <Link to="/" className="text-2xl font-bold text-primary">
-                Your Logo
-              </Link>
-            </div>
             <VerificationPanel />
           </div>
         </div>
