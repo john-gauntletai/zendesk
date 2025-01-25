@@ -25,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
+          <Route index element={<Navigate to="inbox" />} />
           <Route path="inbox" element={<Inbox />}>
             <Route index element={<Navigate to="?status=all" />} />
           </Route>

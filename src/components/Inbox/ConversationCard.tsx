@@ -37,18 +37,25 @@ const ConversationCard = ({
 
   const formatLastUpdated = (date: Date) => {
     const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    
+    // Within 1 minute
+    if (diffMs < 60 * 1000) {
+      return 'Just Now';
+    }
 
+    // Within 24 hours, show minutes if less than 60 minutes
     if (isWithinInterval(date, { start: subHours(now, 24), end: now })) {
-      const hours = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-      );
+      const minutes = Math.floor(diffMs / (1000 * 60));
+      if (minutes < 60) {
+        return `${minutes}m`;
+      }
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
       return `${hours}h`;
     }
 
     if (isWithinInterval(date, { start: subDays(now, 30), end: now })) {
-      const days = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       return `${days}d`;
     }
 

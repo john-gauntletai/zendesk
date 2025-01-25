@@ -12,7 +12,7 @@ import {
   useTagsStore,
   useUserStore,
 } from "../../../store";
-import { Tag } from "../../../types";
+import { Tag, CreateMessagePayload } from "../../../types";
 import toast from "react-hot-toast";
 import TagList from "../../TagList";
 import ConversationStatusBadge from "../../ConversationStatusBadge";
@@ -30,7 +30,7 @@ const ConversationView = () => {
   const assigneeDropdownRef = useRef<HTMLDivElement>(null);
   
   const { conversations, selectedConversationId, updateConversation, addTagToConversation } = useConversationStore();
-  const { messages } = useMessageStore();
+  const { messages, createMessage } = useMessageStore();
   const { session } = useSessionStore();
   const { tags } = useTagsStore();
   const { users } = useUserStore();
@@ -119,8 +119,24 @@ const ConversationView = () => {
     setMessageInput(value);
   };
 
-  const onMessageSubmit = () => {
-    console.log("Message submitted:", messageInput);
+  const onMessageSubmit = async () => {
+    if (!messageInput.trim() || !selectedConversationId || !session) return;
+
+    const newMessage: CreateMessagePayload = {
+      content: messageInput.trim(),
+      conversation_id: selectedConversationId,
+      attachments: [], // No attachments for now
+      sender_id: session.id,
+      sender_type: 'user',
+    };
+
+    try {
+      await createMessage(newMessage);
+      setMessageInput(""); // Clear input after successful send
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      toast.error('Failed to send message');
+    }
   };
 
   const lastMessage = conversationMessages[conversationMessages.length - 1];
@@ -158,7 +174,7 @@ const ConversationView = () => {
   return (
     <div className="flex flex-1 bg-base-100 border-l-2 border-base-300 shadow-sm transition-all">
       <div className="flex flex-1 flex-col">
-        <div className="p-3 shadow-md border-b-2 border-base-300">
+        <div className="p-3 shadow-md border-b border-base-300">
           <div className="flex gap-4">
             {/* Channel Icon Column */}
             <div className="flex-shrink-0 w-6 flex items-center justify-center">

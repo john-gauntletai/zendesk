@@ -18,7 +18,7 @@ export interface CreateMessagePayload {
   content: string;
   attachments: any;
   sender_id: string;
-  sender_type: string;
+  sender_type: 'user' | 'customer';
 }
 
 export interface Message {

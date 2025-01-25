@@ -14,13 +14,9 @@ import ConversationView from "./ConversationView/ConversationView";
 const Inbox = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { customers } = useCustomerStore();
-  const {
-    conversations,
-    selectedConversationId,
-    setSelectedConversationId,
-  } = useConversationStore();
-  const { messages } =
-    useMessageStore();
+  const { conversations, selectedConversationId, setSelectedConversationId } =
+    useConversationStore();
+  const { messages } = useMessageStore();
   const { session } = useSessionStore();
 
   const [expandedSections, setExpandedSections] = useState({
@@ -33,7 +29,6 @@ const Inbox = () => {
       setSearchParams({ status: "open" });
     }
   }, [searchParams]);
-
 
   const handleClickConversation = async (conversationId: string) => {
     setSelectedConversationId(conversationId);
@@ -100,11 +95,14 @@ const Inbox = () => {
       />
 
       {/* Main Content Area */}
-      <div className="px-2 pt-1">
-        <div className="overflow-y-auto space-y-1">
-          {[...filteredConversations]
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            .map((conversation) => {
+      <div className="px-2 pt-1 overflow-y-auto space-y-1">
+        {[...filteredConversations]
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+          .map((conversation) => {
             const customer = customers.find(
               (c) => c.id === conversation.customer_id
             );
@@ -126,17 +124,15 @@ const Inbox = () => {
             );
           })}
 
-          {filteredConversations.length === 0 && (
-            <div className="p-8 text-center text-base-content/70">
-              No conversations found
-            </div>
-          )}
-        </div>
+        {filteredConversations.length === 0 && (
+          <div className="p-8 text-center text-base-content/70">
+            No conversations found
+          </div>
+        )}
       </div>
       <ConversationView />
     </div>
-
-);
+  );
 };
 
 export default Inbox;

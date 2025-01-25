@@ -295,8 +295,7 @@ const ChatWidget = ({ userInfo, onUserInfoSubmit, customer }: ChatWidgetProps) =
         .insert({
           customer_id: customer.id,
           org_id: customer.org_id,
-          status: 'new',
-          channel: 'web'
+          channel: 'chat'
         })
         .select()
         .single();

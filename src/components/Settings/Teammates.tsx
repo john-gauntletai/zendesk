@@ -50,13 +50,6 @@ const Teammates = () => {
 
         if (inviteError) throw inviteError;
 
-        // Update user in public.users
-        const updatePayload = {
-          org_id: session?.org_id,
-          role_id: agentRole.id,
-        };
-
-
         const { data: updateData, error: userError } = await supabase
           .from('users')
           .update({
@@ -64,7 +57,6 @@ const Teammates = () => {
             role_id: agentRole.id,
           })
           .eq('id', authUser.data.user.id)
-          .select();  // Add this to get the response data
 
 
         if (userError) {

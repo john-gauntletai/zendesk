@@ -72,7 +72,7 @@ const SignIn = () => {
           password: formData.password,
         });
         if (error) throw error;
-        navigate('/');
+        navigate('/inbox');
       } else {
         // Sign up
         const { data, error } = await supabase.auth.signUp({
