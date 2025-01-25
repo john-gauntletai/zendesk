@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useTagsStore, useConversationStore } from "../store";
 import Portal from "./Portal";
-import toast from "react-hot-toast";
 
 interface TagListProps {
   conversation: Conversation;
@@ -14,12 +13,19 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
   const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState("");
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-  const [tagSelectorPosition, setTagSelectorPosition] = useState({ top: 0, left: 0 });
-  const [tagActionPosition, setTagActionPosition] = useState({ top: 0, left: 0 });
-  
+  const [tagSelectorPosition, setTagSelectorPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+  const [tagActionPosition, setTagActionPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
   const { tags } = useTagsStore();
-  const { addTagToConversation, removeTagFromConversation } = useConversationStore();
-  
+  const { addTagToConversation, removeTagFromConversation } =
+    useConversationStore();
+
   const tagSelectorTriggerRef = useRef<HTMLButtonElement>(null);
   const tagSelectorRef = useRef<HTMLDivElement>(null);
   const tagActionRef = useRef<HTMLDivElement>(null);
@@ -27,9 +33,11 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        (tagSelectorRef.current && !tagSelectorRef.current.contains(event.target as Node) && 
-         !tagSelectorTriggerRef.current?.contains(event.target as Node)) ||
-        (tagActionRef.current && !tagActionRef.current.contains(event.target as Node))
+        (tagSelectorRef.current &&
+          !tagSelectorRef.current.contains(event.target as Node) &&
+          !tagSelectorTriggerRef.current?.contains(event.target as Node)) ||
+        (tagActionRef.current &&
+          !tagActionRef.current.contains(event.target as Node))
       ) {
         setIsTagSelectorOpen(false);
         setSelectedTagId(null);
@@ -57,17 +65,25 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
 
     if (isTagSelectorOpen || selectedTagId) {
       document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("scroll", () => {
-        if (isTagSelectorOpen) updateTagSelectorPosition();
-        if (selectedTagId) {
-          const tagElement = document.querySelector(`[data-tag-id="${selectedTagId}"]`);
-          if (tagElement) updateTagActionPosition(tagElement as HTMLElement);
-        }
-      }, true);
+      document.addEventListener(
+        "scroll",
+        () => {
+          if (isTagSelectorOpen) updateTagSelectorPosition();
+          if (selectedTagId) {
+            const tagElement = document.querySelector(
+              `[data-tag-id="${selectedTagId}"]`
+            );
+            if (tagElement) updateTagActionPosition(tagElement as HTMLElement);
+          }
+        },
+        true
+      );
       window.addEventListener("resize", () => {
         if (isTagSelectorOpen) updateTagSelectorPosition();
         if (selectedTagId) {
-          const tagElement = document.querySelector(`[data-tag-id="${selectedTagId}"]`);
+          const tagElement = document.querySelector(
+            `[data-tag-id="${selectedTagId}"]`
+          );
           if (tagElement) updateTagActionPosition(tagElement as HTMLElement);
         }
       });
@@ -80,7 +96,11 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
     };
   }, [isTagSelectorOpen, selectedTagId]);
 
-  const handleTagClick = (event: React.MouseEvent, tagId: string, element: HTMLElement) => {
+  const handleTagClick = (
+    event: React.MouseEvent,
+    tagId: string,
+    element: HTMLElement
+  ) => {
     event.stopPropagation();
     if (selectedTagId === tagId) {
       setSelectedTagId(null);
@@ -106,9 +126,10 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
     setSelectedTagId(null);
   };
 
-  const filteredTags = tags.filter(tag => 
-    tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
-    !conversation?.tags?.some(t => t.id === tag.id)
+  const filteredTags = tags.filter(
+    (tag) =>
+      tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+      !conversation?.tags?.some((t) => t.id === tag.id)
   );
 
   return (
@@ -118,22 +139,22 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
           key={tag.id}
           data-tag-id={tag.id}
           onClick={(e) => handleTagClick(e, tag.id, e.currentTarget)}
-          className="text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80"
+          className="text-xs px-2 py-0.5 rounded-full font-semibold cursor-pointer hover:opacity-80"
           style={{
             backgroundColor: tag.background_color,
-            color: tag.text_color
+            color: tag.text_color,
           }}
         >
           {tag.name}
         </span>
       ))}
-      
+
       {selectedTagId && (
         <Portal>
-          <div 
+          <div
             ref={tagActionRef}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: tagActionPosition.top,
               left: tagActionPosition.left,
             }}
@@ -150,7 +171,7 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
           </div>
         </Portal>
       )}
-      
+
       {showAddButton && (
         <>
           <button
@@ -160,7 +181,8 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
               setIsTagSelectorOpen(!isTagSelectorOpen);
               setSelectedTagId(null);
               if (!isTagSelectorOpen) {
-                const rect = tagSelectorTriggerRef.current?.getBoundingClientRect();
+                const rect =
+                  tagSelectorTriggerRef.current?.getBoundingClientRect();
                 if (rect) {
                   setTagSelectorPosition({
                     top: rect.bottom + window.scrollY + 4,
@@ -179,7 +201,7 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
               <div
                 ref={tagSelectorRef}
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: tagSelectorPosition.top,
                   left: tagSelectorPosition.left,
                 }}
@@ -206,11 +228,15 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
                         onClick={() => handleAddTag(tag)}
                         className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2"
                       >
-                        <span 
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: tag.background_color }}
-                        />
-                        <span className="text-sm">{tag.name}</span>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full font-semibold cursor-pointer hover:opacity-80"
+                          style={{
+                            backgroundColor: tag.background_color,
+                            color: tag.text_color,
+                          }}
+                        >
+                          {tag.name}
+                        </span>
                       </button>
                     ))
                   )}
@@ -224,4 +250,4 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
   );
 };
 
-export default TagList; 
+export default TagList;
