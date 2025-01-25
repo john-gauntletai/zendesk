@@ -1,22 +1,80 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router';
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router";
 import Avatar from "../__shared/Avatar";
 import { useSessionStore } from '../../store';
+import Portal from "../Portal";
 import {
   InboxIcon,
   ChartBarIcon,
   BookOpenIcon,
   Cog6ToothIcon,
+  ChevronDownIcon,
   CommandLineIcon,
   ArrowRightStartOnRectangleIcon,
-  UsersIcon,
+  UserCircleIcon,
+  SunIcon,
+  MoonIcon,
 } from '@heroicons/react/24/outline';
 
 const Sidebar = () => {
   const { logout } = useSessionStore();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { session } = useSessionStore();
   const location = useLocation();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [theme, setTheme] = useState(() => 
+    document.documentElement.getAttribute('data-theme') || 'light'
+  );
+  
+  const profileTriggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(event.target as Node) &&
+        !profileTriggerRef.current?.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    const updatePosition = () => {
+      if (profileTriggerRef.current) {
+        const rect = profileTriggerRef.current.getBoundingClientRect();
+        const menuHeight = menuRef.current?.offsetHeight || 0;
+        
+        setMenuPosition({
+          top: rect.top - menuHeight - 200, // Position above with 8px gap
+          left: rect.right,
+        });
+      }
+    };
+
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      // Delay position update to next frame to ensure menu is rendered
+      requestAnimationFrame(updatePosition);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isProfileMenuOpen]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(current => current === 'light' ? 'business' : 'light');
+  };
 
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
@@ -28,10 +86,6 @@ const Sidebar = () => {
         ? 'bg-primary text-primary-content' 
         : 'text-gray-400 hover:text-white hover:bg-base-800'
     }`;
-  };
-
-  const handleSignOut = async () => {
-    logout();
   };
 
   return (
@@ -82,32 +136,77 @@ const Sidebar = () => {
         </Link>
       </nav>
 
-      {/* Profile Menu */}
-      <div className="relative flex items-center justify-center">
-        <div className="dropdown dropdown-top dropdown-start">
-          <label tabIndex={0} className="w-100 flex items-center justify-center cursor-pointer focus:outline-none">
-            <Avatar user={session} size={32} />
-          </label>
-          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-white rounded-box w-52 mt-1 border border-gray-100">
-            <li className="menu-title px-4 py-2">
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-900">{session?.full_name}</span>
-                <span className="text-xs text-gray-500">{session?.email}</span>
-              </div>
-            </li>
-            <div className="divider my-0"></div>
-            <li>
-              <button 
-                onClick={() => handleSignOut()} 
-                className="flex items-center gap-2 text-gray-600 hover:text-red-600 hover:bg-red-50"
-              >
-                <ArrowRightStartOnRectangleIcon className="w-4 h-4" />
-                <span>Sign out</span>
-              </button>
-            </li>
-          </ul>
-        </div>
+      {/* Profile Menu Trigger */}
+      <div className="mt-auto pt-4">
+        <button
+          ref={profileTriggerRef}
+          onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors relative"
+          data-tip={session?.full_name}
+        >
+          <Avatar user={session} size={24} />
+        </button>
       </div>
+
+      {/* Profile Menu in Portal */}
+      {isProfileMenuOpen && (
+        <Portal>
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: menuPosition.top,
+              left: menuPosition.left,
+            }}
+            className="z-50 w-56 bg-base-100 rounded-lg shadow-lg border border-base-300"
+          >
+            <div className="p-3 border-b border-base-300">
+              <div className="font-medium truncate">
+                {session?.full_name || "Unknown"}
+              </div>
+              <div className="text-sm text-base-content/70 truncate">
+                {session?.email || "No email"}
+              </div>
+            </div>
+
+            <div className="p-1">
+              <Link
+                to="/settings/profile"
+                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-base-200"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                <UserCircleIcon className="w-5 h-5" />
+                <span>Profile Settings</span>
+              </Link>
+
+              <button
+                onClick={toggleTheme}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-base-200"
+              >
+                {theme === 'light' ? (
+                  <>
+                    <MoonIcon className="w-5 h-5" />
+                    <span>Dark Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <SunIcon className="w-5 h-5" />
+                    <span>Light Mode</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-base-200 text-error"
+              >
+                <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </Portal>
+      )}
     </div>
   );
 };
