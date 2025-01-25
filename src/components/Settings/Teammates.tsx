@@ -18,6 +18,11 @@ const Teammates = () => {
     users.find((u) => u.id === session?.id)?.role_id ===
     roles.find((r) => r.name.toLowerCase() === "admin")?.id;
 
+  // Sort users by created_at in descending order
+  const sortedUsers = [...users].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
   const handleRoleChange = async (userId: string, newRoleId: string) => {
     try {
       const { error } = await supabase
@@ -93,7 +98,7 @@ const Teammates = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {sortedUsers.map((user) => (
                   <tr key={user.id}>
                     <td>
                       <div className="flex items-center gap-2">
