@@ -21,7 +21,7 @@ import Subscription from "./components/Settings/Subscription";
 
 document.documentElement.setAttribute(
   'data-theme', 
-  localStorage.getItem('theme') || 'light'
+  localStorage.getItem('theme') || 'business'
 );
 
 createRoot(document.getElementById("root")!).render(
