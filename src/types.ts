@@ -69,8 +69,11 @@ export interface Organization {
   logoUrl: string;
 }
 
-export interface Role {
+export interface Team {
   id: string;
   created_at: string;
   name: string;
+  emoji_icon: string;
+  org_id: string;
+  users?: User[];
 }

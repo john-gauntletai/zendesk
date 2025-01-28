@@ -8,9 +8,10 @@ interface AvatarProps {
   user: User | undefined;
   size?: number;
   showTooltip?: boolean;
+  withBorder?: boolean;
 }
 
-const Avatar = ({ user, size = 32, showTooltip = true }: AvatarProps) => {
+const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: AvatarProps) => {
   const [showInfo, setShowInfo] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const avatarRef = useRef<HTMLDivElement>(null);
@@ -53,12 +54,15 @@ const Avatar = ({ user, size = 32, showTooltip = true }: AvatarProps) => {
           <img
             src={user.avatar_url}
             alt={user.full_name}
-            className="rounded-full object-cover"
+            className={`rounded-full object-cover ${withBorder ? "border-2 border-base-100" : ""}`}
             style={{ width: size, height: size }}
           />
         ) : (
           <Avvvatars
             value={user?.full_name || user?.email || "?"}
+            border={withBorder}
+            borderColor={withBorder ? "#ffffff" : 'transparent'}
+            borderSize={withBorder ? 2 : 0}
             size={size}
           />
         )}

@@ -11,6 +11,17 @@
 - email (text)
 - avatar_url (text)
 
+### teams
+- id (uuid, PK)
+- created_at (timestamptz)
+- name (text)
+- org_id (uuid, FK references orgs.id)
+- emoji_icon (text)
+
+### users_teams
+- user_id (uuid, FK references users.id)
+- team_id (uuid, FK references teams.id)
+
 ### messages
 - id (uuid, PK)
 - created_at (timestamptz)
@@ -73,3 +84,5 @@
 - conversations_tags.tag_id -> tags.id
 - tags.org_id -> orgs.id
 - tags.created_by -> users.id
+- users_teams.user_id -> users.id
+- users_teams.team_id -> teams.id

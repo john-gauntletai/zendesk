@@ -9,6 +9,7 @@ import {
   CreateMessagePayload,
   Tag,
   Role,
+  Team,
 } from "./types";
 
 interface SessionState {
@@ -66,6 +67,17 @@ interface TagsState {
 interface RolesState {
   roles: Role[];
   fetchRoles: () => Promise<void>;
+}
+
+interface TeamsState {
+  teams: Team[];
+  fetchTeams: () => Promise<void>;
+  createTeam: (team: Team) => Promise<void>;
+  updateTeam: (team: Team) => Promise<void>;
+  removeTeam: (teamId: string) => Promise<void>;
+  fetchTeamById: (teamId: string) => Promise<void>;
+  addUserToTeam: (teamId: string, userId: string) => Promise<void>;
+  removeUserFromTeam: (teamId: string, userId: string) => Promise<void>;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -323,6 +335,104 @@ export const useRolesStore = create<RolesState>((set) => ({
       console.error(error);
     } else {
       set({ roles: data || [] });
+    }
+  },
+}));
+
+export const useTeamsStore = create<TeamsState>((set) => ({
+  teams: [],
+  fetchTeams: async () => {
+    const { data, error } = await supabase
+      .from("teams")
+      .select(`
+        *,
+        users:users_teams(
+          user:users(*)
+        )
+      `);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch teams");
+    } else {
+      // Transform the data to match our Team type
+      const transformedTeams = data.map(team => ({
+        ...team,
+        users: team.users?.map(u => u.user)
+      }));
+      set({ teams: transformedTeams });
+    }
+  },
+  fetchTeamById: async (teamId: string) => {
+    const { data, error } = await supabase.from("teams").select("*, users:users_teams(user:users(*))").eq("id", teamId).single();
+    if (error) {
+      console.error(error);
+    } else {
+      const transformedTeam = {
+        ...data,
+        users: data.users?.map(u => u.user)
+      };
+      set((state) => {
+        const existingTeamIndex = state.teams.findIndex(t => t.id === teamId);
+        if (existingTeamIndex >= 0) {
+          // Replace existing team
+          const newTeams = [...state.teams];
+          newTeams[existingTeamIndex] = transformedTeam;
+          return { teams: newTeams };
+        } else {
+          // Add new team
+          return { teams: [...state.teams, transformedTeam] };
+        }
+      });
+    }
+  },
+  createTeam: async (team: Team) => {
+    const { data, error } = await supabase.from("teams").insert(team).select("*, users:users_teams(user:users(*))");
+    if (error) {
+      console.error(error);
+      toast.error("Failed to create team");
+    }
+  },
+  updateTeam: async (team: Team) => {
+    const { data, error } = await supabase.from("teams").update(team).eq("id", team.id).select("*, users:users_teams(user:users(*))").single();
+    if (error) {
+      console.error(error);
+      toast.error("Failed to update team");
+    } else {
+      const transformedTeam = {
+        ...data,
+        users: data.users?.map(u => u.user)
+      };
+      set((state) => ({
+        teams: state.teams.map((t) => (t.id === team.id ? transformedTeam : t)),
+      }));
+    }
+  },
+  removeTeam: async (teamId: string) => {
+    const { data, error } = await supabase.from("teams").delete().eq("id", teamId);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to remove team");
+    } else {
+      set((state) => ({
+        teams: state.teams.filter((t) => t.id !== teamId),
+      }));
+    }
+  },
+  addUserToTeam: async (teamId: string, userId: string) => {
+    const { data, error } = await supabase.from("users_teams").insert({
+      team_id: teamId,
+      user_id: userId,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Failed to add user to team");
+    }
+  },
+  removeUserFromTeam: async (teamId: string, userId: string) => {
+    const { data, error } = await supabase.from("users_teams").delete().eq("team_id", teamId).eq("user_id", userId);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to remove user from team");
     }
   },
 }));

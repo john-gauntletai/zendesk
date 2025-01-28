@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import SettingsPageLayout from "./SettingsPageLayout";
-import { useUserStore, useSessionStore, useRolesStore } from "../../store";
+import { useUserStore, useSessionStore, useRolesStore, useTeamsStore } from "../../store";
 import Avatar from "../__shared/Avatar";
 import { toast } from "react-hot-toast";
 import supabase from "../../supabase";
@@ -11,6 +11,7 @@ const Teammates = () => {
   const { users, fetchUsers } = useUserStore();
   const { session } = useSessionStore();
   const { roles } = useRolesStore();
+  const { teams } = useTeamsStore();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // Check if current user is admin
@@ -94,54 +95,76 @@ const Teammates = () => {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Joined</th>
+                  <th>Teams</th>
                   <th>Role</th>
                 </tr>
               </thead>
               <tbody>
-                {sortedUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <Avatar user={user} size={32} />
-                        <span>{user.full_name}</span>
-                      </div>
-                    </td>
-                    <td className="text-base-content/70">{user.email}</td>
-                    <td className="text-base-content/70">
-                      {format(new Date(user.created_at), "MMM d, yyyy")}
-                    </td>
-                    <td>
-                      {isAdmin && user.id !== session?.id ? (
-                        <select
-                          className="select select-sm select-bordered"
-                          value={user.role_id}
-                          onChange={(e) =>
-                            handleRoleChange(user.id, e.target.value)
-                          }
-                        >
-                          {roles.map((role) => (
-                            <option key={role.id} value={role.id}>
-                              {role.name.charAt(0).toUpperCase() +
-                                role.name.slice(1)}
-                            </option>
+                {sortedUsers.map((user) => {
+                  const userTeams = teams.filter(team => 
+                    team.users?.some(u => u.id === user.id)
+                  );
+
+                  return (
+                    <tr key={user.id}>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <Avatar user={user} size={32} />
+                          <span>{user.full_name}</span>
+                        </div>
+                      </td>
+                      <td className="text-base-content/70">{user.email}</td>
+                      <td className="text-base-content/70">
+                        {format(new Date(user.created_at), "MMM d, yyyy")}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          {userTeams.map(team => (
+                            <div 
+                              key={team.id}
+                              className="flex items-center gap-1.5 px-2 py-1 bg-base-200 rounded-full text-sm"
+                            >
+                              <span className="w-5 h-5 flex items-center justify-center bg-base-100 rounded-full">
+                                {team.emoji_icon}
+                              </span>
+                              <span>{team.name}</span>
+                            </div>
                           ))}
-                        </select>
-                      ) : (
-                        <span className="text-base-content/70">
-                          {(
-                            roles.find((r) => r.id === user.role_id)?.name || ""
-                          )
-                            .charAt(0)
-                            .toUpperCase() +
-                            (
-                              roles.find((r) => r.id === user.role_id)?.name ||
-                              ""
-                            ).slice(1)}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        </div>
+                      </td>
+                      <td>
+                        {isAdmin && user.id !== session?.id ? (
+                          <select
+                            className="select select-sm select-bordered"
+                            value={user.role_id}
+                            onChange={(e) =>
+                              handleRoleChange(user.id, e.target.value)
+                            }
+                          >
+                            {roles.map((role) => (
+                              <option key={role.id} value={role.id}>
+                                {role.name.charAt(0).toUpperCase() +
+                                  role.name.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-base-content/70">
+                            {(
+                              roles.find((r) => r.id === user.role_id)?.name || ""
+                            )
+                              .charAt(0)
+                              .toUpperCase() +
+                              (
+                                roles.find((r) => r.id === user.role_id)?.name ||
+                                ""
+                              ).slice(1)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {users.length === 0 && (
                   <tr>
                     <td
