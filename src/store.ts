@@ -10,6 +10,9 @@ import {
   Tag,
   Role,
   Team,
+  KnowledgeBase,
+  Category,
+  Article,
 } from "./types";
 
 interface SessionState {
@@ -78,6 +81,30 @@ interface TeamsState {
   fetchTeamById: (teamId: string) => Promise<void>;
   addUserToTeam: (teamId: string, userId: string) => Promise<void>;
   removeUserFromTeam: (teamId: string, userId: string) => Promise<void>;
+}
+
+interface KnowledgeBaseState {
+  knowledgeBases: KnowledgeBase[];
+  categories: Category[];
+  articles: Article[];
+  fetchKnowledgeBases: () => Promise<void>;
+  fetchCategories: () => Promise<void>;
+  fetchArticles: () => Promise<void>;
+  createKnowledgeBase: (kb: KnowledgeBase) => Promise<void>;
+  updateKnowledgeBase: (kb: KnowledgeBase) => Promise<void>;
+  addKnowledgeBase: (kb: KnowledgeBase) => void;
+  receiveKnowledgeBaseUpdate: (kb: KnowledgeBase) => void;
+  removeKnowledgeBase: (id: string) => void;
+  createCategory: (category: Category) => Promise<void>;
+  updateCategory: (category: Category) => Promise<void>;
+  addCategory: (category: Category) => void;
+  receiveCategoryUpdate: (category: Category) => void;
+  removeCategory: (id: string) => void;
+  createArticle: (article: Article) => Promise<void>;
+  updateArticle: (article: Article) => Promise<void>;
+  addArticle: (article: Article) => void;
+  receiveArticleUpdate: (article: Article) => void;
+  removeArticle: (id: string) => void;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -434,4 +461,115 @@ export const useTeamsStore = create<TeamsState>((set) => ({
       toast.error("Failed to remove user from team");
     }
   },
+}));
+
+export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
+  knowledgeBases: [],
+  categories: [],
+  articles: [],
+  fetchKnowledgeBases: async () => {
+    const { data, error } = await supabase.from("knowledge_bases").select("*");
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch knowledge bases");
+    } else {
+      set({ knowledgeBases: data || [] });
+    }
+  },
+  fetchCategories: async () => {
+    const { data, error } = await supabase.from("categories").select("*");
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch categories");
+    } else {
+      set({ categories: data || [] });
+    }
+  },
+  fetchArticles: async () => {
+    const { data, error } = await supabase.from("articles").select("*");
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch articles");
+    } else {
+      set({ articles: data || [] });
+    }
+  },
+  createKnowledgeBase: async (kb: KnowledgeBase) => {
+    const { data, error } = await supabase.from("knowledge_bases").insert(kb);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to create knowledge base");
+    }
+  },
+  updateKnowledgeBase: async (kb: KnowledgeBase) => {
+    const { data, error } = await supabase.from("knowledge_bases").update(kb).eq("id", kb.id);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to update knowledge base");
+    }
+  },
+  createCategory: async (category: Category) => {
+    const { data, error } = await supabase.from("categories").insert(category);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to create category");
+    }
+  },
+  updateCategory: async (category: Category) => {
+    const { data, error } = await supabase.from("categories").update(category).eq("id", category.id);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to update category");
+    }
+  },
+  createArticle: async (article: Article) => {
+    const { data, error } = await supabase.from("articles").insert(article);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to create article");
+    }
+  },
+  updateArticle: async (article: Article) => {
+    const { data, error } = await supabase.from("articles").update(article).eq("id", article.id);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to update article");
+    }
+  },
+  addKnowledgeBase: (kb: KnowledgeBase) =>
+    set((state) => ({
+      knowledgeBases: [...state.knowledgeBases, kb],
+    })),
+  receiveKnowledgeBaseUpdate: (kb: KnowledgeBase) =>
+    set((state) => ({
+      knowledgeBases: state.knowledgeBases.map((k) => (k.id === kb.id ? kb : k)),
+    })),
+  removeKnowledgeBase: (id: string) =>
+    set((state) => ({
+      knowledgeBases: state.knowledgeBases.filter((k) => k.id !== id),
+    })),
+  addCategory: (category: Category) =>
+    set((state) => ({
+      categories: [...state.categories, category],
+    })),
+  receiveCategoryUpdate: (category: Category) =>
+    set((state) => ({
+      categories: state.categories.map((c) => (c.id === category.id ? category : c)),
+    })),
+  removeCategory: (id: string) =>
+    set((state) => ({
+      categories: state.categories.filter((c) => c.id !== id),
+    })),
+  addArticle: (article: Article) =>
+    set((state) => ({
+      articles: [...state.articles, article],
+    })),
+  receiveArticleUpdate: (article: Article) =>
+    set((state) => ({
+      articles: state.articles.map((a) => (a.id === article.id ? article : a)),
+    })),
+  removeArticle: (id: string) =>
+    set((state) => ({
+      articles: state.articles.filter((a) => a.id !== id),
+    })),
 }));

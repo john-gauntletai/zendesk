@@ -10,12 +10,13 @@ import {
   useTagsStore,
   useRolesStore,
   useTeamsStore,
+  useKnowledgeBaseStore,
 } from "./store";
 import LandingPage from "./components/LandingPage";
 import Onboarding from "./components/Onboarding";
 import Sidebar from "./components/Sidebar/Sidebar";
 import "./App.css";
-import { Message, User, Conversation, Customer, Tag, Team } from "./types";
+import { Message, User, Conversation, Customer, Tag, Team, KnowledgeBase, Category, Article } from "./types";
 
 function App() {
   const { isLoading, session, fetchSession } = useSessionStore();
@@ -31,6 +32,21 @@ function App() {
   const { fetchTags, addTag, removeTag, updateTag } = useTagsStore();
   const { fetchRoles } = useRolesStore();
   const { teams, fetchTeams, fetchTeamById } = useTeamsStore();
+  const {
+    knowledgeBases,
+    fetchKnowledgeBases,
+    fetchCategories,
+    fetchArticles,
+    addKnowledgeBase,
+    receiveKnowledgeBaseUpdate,
+    removeKnowledgeBase,
+    addCategory,
+    receiveCategoryUpdate,
+    removeCategory,
+    addArticle,
+    receiveArticleUpdate,
+    removeArticle,
+  } = useKnowledgeBaseStore();
 
   // Initial data fetch
   useEffect(() => {
@@ -46,6 +62,9 @@ function App() {
       fetchTags();
       fetchRoles();
       fetchTeams();
+      fetchKnowledgeBases();
+      fetchCategories();
+      fetchArticles();
     }
   }, [session]);
 
@@ -175,11 +194,55 @@ function App() {
       )
       .subscribe();
 
+      const kbSubscription = supabase
+      .channel("knowledge_bases")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "knowledge_bases",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const newKB = payload.new as KnowledgeBase;
+          addKnowledgeBase(newKB);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "knowledge_bases",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const updatedKB = payload.new as KnowledgeBase;
+          receiveKnowledgeBaseUpdate(updatedKB);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "knowledge_bases",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const deletedKB = payload.old as KnowledgeBase;
+          removeKnowledgeBase(deletedKB.id);
+        }
+      )
+      .subscribe();
+
     return () => {
       conversationsSubscription.unsubscribe();
       customersSubscription.unsubscribe();
       usersSubscription.unsubscribe();
       teamsSubscription.unsubscribe();
+      kbSubscription.unsubscribe();
     };
   }, [session]);
 
@@ -363,6 +426,101 @@ function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!session || !knowledgeBases?.length) return;
+
+    const categoriesSubscription = supabase
+      .channel("categories")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "categories",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const newCategory = payload.new as Category;
+          addCategory(newCategory);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "categories",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const updatedCategory = payload.new as Category;
+          receiveCategoryUpdate(updatedCategory);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "categories",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const deletedCategory = payload.old as Category;
+          removeCategory(deletedCategory.id);
+        }
+      )
+      .subscribe();
+
+    const articlesSubscription = supabase
+      .channel("articles")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "articles",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const newArticle = payload.new as Article;
+          addArticle(newArticle);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "articles",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const updatedArticle = payload.new as Article;
+          receiveArticleUpdate(updatedArticle);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "articles",
+          filter: `org_id=eq.${session.org_id}`,
+        },
+        (payload) => {
+          const deletedArticle = payload.old as Article;
+          removeArticle(deletedArticle.id);
+        }
+      )
+      .subscribe();
+
+      return () => {
+        categoriesSubscription.unsubscribe();
+        articlesSubscription.unsubscribe();
+      };
+  }, [session, knowledgeBases]);
 
   if (isLoading) {
     return null;

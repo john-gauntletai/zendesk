@@ -77,3 +77,28 @@ export interface Team {
   org_id: string;
   users?: User[];
 }
+
+export interface KnowledgeBase {
+  id: string;
+  created_at: string;
+  name: string;
+  description: string;
+  org_id: string;
+}
+
+export interface Category {
+  id: string;
+  created_at: string;
+  name: string;
+  knowledge_base_id: string;
+  org_id: string;
+}
+
+export interface Article {
+  id: string;
+  created_at: string;
+  title: string;
+  content: string;
+  category_id: string;
+  org_id: string;
+}
