@@ -56,15 +56,15 @@ function App() {
   useEffect(() => {
     if (session) {
       fetchCustomers(session.org_id);
-      fetchUsers();
-      fetchConversations();
-      fetchMessages();
+      fetchUsers(session.org_id);
+      fetchConversations(session.org_id);
+      fetchMessages(session.org_id);
       fetchTags();
-      fetchRoles();
-      fetchTeams();
-      fetchKnowledgeBases();
-      fetchCategories();
-      fetchArticles();
+      fetchRoles(session.org_id);
+      fetchTeams(session.org_id);
+      fetchKnowledgeBases(session.org_id);
+      fetchCategories(session.org_id);
+      fetchArticles(session.org_id);
     }
   }, [session]);
 
@@ -195,7 +195,7 @@ function App() {
       .subscribe();
 
       const kbSubscription = supabase
-      .channel("knowledge_bases")
+      .channel("knowledgebases")
       .on(
         "postgres_changes",
         {

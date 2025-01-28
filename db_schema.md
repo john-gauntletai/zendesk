@@ -78,6 +78,7 @@
 - name (text)
 - logo_url (text)
 - description (text)
+- theme_color (text)
 - org_id (uuid, FK references orgs.id)
 
 ### categories

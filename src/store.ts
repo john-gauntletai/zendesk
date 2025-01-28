@@ -183,10 +183,11 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
 
 export const useConversationStore = create<ConversationState>((set, get) => ({
   conversations: [],
-  fetchConversations: async () => {
+  fetchConversations: async (orgId: string) => {
     const { data, error } = await supabase
       .from("conversations")
-      .select("*, tags(*)");
+      .select("*, tags(*)")
+      .eq("org_id", orgId);
     if (error) {
       console.error(error);
     } else {
@@ -287,8 +288,8 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
 
 export const useMessageStore = create<MessageState>((set, get) => ({
   messages: [],
-  fetchMessages: async () => {
-    const { data, error } = await supabase.from("messages").select("*");
+  fetchMessages: async (orgId: string) => {
+    const { data, error } = await supabase.from("messages").select("*").eq("org_id", orgId);
     if (error) {
       console.error(error);
       toast.error("Failed to fetch messages");
@@ -367,7 +368,7 @@ export const useRolesStore = create<RolesState>((set) => ({
 
 export const useTeamsStore = create<TeamsState>((set) => ({
   teams: [],
-  fetchTeams: async () => {
+  fetchTeams: async (orgId: string) => {
     const { data, error } = await supabase
       .from("teams")
       .select(`
@@ -375,7 +376,8 @@ export const useTeamsStore = create<TeamsState>((set) => ({
         users:users_teams(
           user:users(*)
         )
-      `);
+      `)
+      .eq("org_id", orgId);
     if (error) {
       console.error(error);
       toast.error("Failed to fetch teams");
@@ -467,8 +469,8 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
   knowledgeBases: [],
   categories: [],
   articles: [],
-  fetchKnowledgeBases: async () => {
-    const { data, error } = await supabase.from("knowledge_bases").select("*");
+  fetchKnowledgeBases: async (orgId: string) => {
+    const { data, error } = await supabase.from("knowledgebases").select("*").eq("org_id", orgId);
     if (error) {
       console.error(error);
       toast.error("Failed to fetch knowledge bases");
@@ -476,8 +478,8 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
       set({ knowledgeBases: data || [] });
     }
   },
-  fetchCategories: async () => {
-    const { data, error } = await supabase.from("categories").select("*");
+  fetchCategories: async (orgId: string) => {
+    const { data, error } = await supabase.from("categories").select("*").eq("org_id", orgId);
     if (error) {
       console.error(error);
       toast.error("Failed to fetch categories");
@@ -485,8 +487,8 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
       set({ categories: data || [] });
     }
   },
-  fetchArticles: async () => {
-    const { data, error } = await supabase.from("articles").select("*");
+  fetchArticles: async (orgId: string) => {
+    const { data, error } = await supabase.from("articles").select("*").eq("org_id", orgId);
     if (error) {
       console.error(error);
       toast.error("Failed to fetch articles");
@@ -495,14 +497,14 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     }
   },
   createKnowledgeBase: async (kb: KnowledgeBase) => {
-    const { data, error } = await supabase.from("knowledge_bases").insert(kb);
+    const { data, error } = await supabase.from("knowledgebases").insert(kb);
     if (error) {
       console.error(error);
       toast.error("Failed to create knowledge base");
     }
   },
   updateKnowledgeBase: async (kb: KnowledgeBase) => {
-    const { data, error } = await supabase.from("knowledge_bases").update(kb).eq("id", kb.id);
+    const { data, error } = await supabase.from("knowledgebases").update(kb).eq("id", kb.id);
     if (error) {
       console.error(error);
       toast.error("Failed to update knowledge base");

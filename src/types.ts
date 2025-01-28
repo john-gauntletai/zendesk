@@ -83,6 +83,8 @@ export interface KnowledgeBase {
   created_at: string;
   name: string;
   description: string;
+  logo_url: string;
+  theme_color: string;
   org_id: string;
 }
 
