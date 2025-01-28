@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { User } from "../../types";
 import Portal from "../Portal";
-import { useRolesStore } from "../../store";
+import { useRolesStore, useTeamsStore } from "../../store";
 import Avvvatars from "avvvatars-react";
 
 interface AvatarProps {
@@ -16,6 +16,7 @@ const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: Ava
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const avatarRef = useRef<HTMLDivElement>(null);
   const { roles } = useRolesStore();
+  const { teams } = useTeamsStore();
 
   useEffect(() => {
     const updatePosition = () => {
@@ -41,6 +42,7 @@ const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: Ava
   }, [showInfo]);
 
   const userRole = roles.find(r => r.id === user?.role_id);
+  const userTeams = teams.filter(team => team.users?.some(u => u.id === user?.id));
 
   return (
     <>
@@ -61,8 +63,6 @@ const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: Ava
           <Avvvatars
             value={user?.full_name || user?.email || "?"}
             border={withBorder}
-            borderColor={withBorder ? "#ffffff" : 'transparent'}
-            borderSize={withBorder ? 2 : 0}
             size={size}
           />
         )}
@@ -76,7 +76,7 @@ const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: Ava
               top: tooltipPosition.top,
               left: tooltipPosition.left,
             }}
-            className="z-50 w-52 bg-base-100 rounded-lg shadow-lg border border-base-300 p-3"
+            className="z-50 w-64 bg-base-100 rounded-lg shadow-lg border border-base-300 p-3"
           >
             <div className="flex items-center gap-3">
               <Avatar user={user} size={40} showTooltip={false} />
@@ -88,6 +88,24 @@ const Avatar = ({ user, size = 32, showTooltip = true, withBorder = false }: Ava
                 )}
               </div>
             </div>
+            {userTeams.length > 0 && (
+              <div className="mt-3 border-t border-base-200 pt-3">
+                <div className="text-xs text-base-content/50 mb-1.5">Teams</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {userTeams.map(team => (
+                    <div 
+                      key={team.id}
+                      className="flex items-center gap-1 px-2 py-1 bg-base-200 rounded-full text-xs"
+                    >
+                      <span className="w-4 h-4 flex items-center justify-center bg-base-100 rounded-full">
+                        {team.emoji_icon}
+                      </span>
+                      <span>{team.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Portal>
       )}
