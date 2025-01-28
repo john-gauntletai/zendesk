@@ -9,6 +9,13 @@ interface TagListProps {
   showAddButton?: boolean;
 }
 
+// Helper function to get name length excluding emojis
+const getNameLengthWithoutEmoji = (name: string) => {
+  // This regex matches emoji characters
+  const emojiRegex = /\p{Emoji}/gu;
+  return name.replace(emojiRegex, '').length;
+};
+
 const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
   const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState("");
@@ -29,6 +36,18 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
   const tagSelectorTriggerRef = useRef<HTMLButtonElement>(null);
   const tagSelectorRef = useRef<HTMLDivElement>(null);
   const tagActionRef = useRef<HTMLDivElement>(null);
+
+  // Sort tags by name length (excluding emojis), then alphabetically for same lengths
+  const sortedTags = [...tags].sort((a, b) => {
+    const aLength = getNameLengthWithoutEmoji(a.name);
+    const bLength = getNameLengthWithoutEmoji(b.name);
+    const lengthDiff = aLength - bLength;
+    return lengthDiff === 0 ? a.name.localeCompare(b.name) : lengthDiff;
+  });
+
+  const filteredTags = sortedTags.filter(tag =>
+    tag.name.toLowerCase().includes(tagSearch.toLowerCase())
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -126,15 +145,14 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
     setSelectedTagId(null);
   };
 
-  const filteredTags = tags.filter(
-    (tag) =>
-      tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
-      !conversation?.tags?.some((t) => t.id === tag.id)
-  );
-
   return (
-    <div className="flex gap-2 items-center flex-wrap">
-      {conversation.tags?.map((tag) => (
+    <div className="flex flex-wrap gap-1.5 items-center">
+      {conversation?.tags?.sort((a, b) => {
+        const aLength = getNameLengthWithoutEmoji(a.name);
+        const bLength = getNameLengthWithoutEmoji(b.name);
+        const lengthDiff = aLength - bLength;
+        return lengthDiff === 0 ? a.name.localeCompare(b.name) : lengthDiff;
+      }).map((tag) => (
         <span
           key={tag.id}
           data-tag-id={tag.id}

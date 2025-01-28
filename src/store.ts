@@ -249,7 +249,6 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
       .delete()
       .eq("conversation_id", conversationId)
       .eq("tag_id", tagId);
-    console.log("data", data);
     if (error) {
       console.error(error);
       toast.error("Failed to remove tag from conversation");
