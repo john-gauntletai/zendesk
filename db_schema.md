@@ -72,7 +72,7 @@
 - created_at (timestamptz)
 - name (text)
 
-### knowledge_bases
+### knowledgebases
 - id (uuid, PK)
 - created_at (timestamptz)
 - name (text)
@@ -85,7 +85,7 @@
 - id (uuid, PK)
 - created_at (timestamptz)
 - name (text)
-- knowledge_base_id (uuid, FK references knowledge_bases.id)
+- knowledgebase_id (uuid, FK references knowledgebases.id)
 
 ### articles
 - id (uuid, PK)
@@ -94,10 +94,11 @@
 - content (text)
 - status (text)
 - category_id (uuid, FK references categories.id)
-- knowledge_base_id (uuid, FK references knowledge_bases.id)
+- knowledgebase_id (uuid, FK references knowledgebases.id)
 - org_id (uuid, FK references orgs.id)
 - created_by (uuid, FK references users.id)
 - last_updated_by (uuid, FK references users.id)
+- last_updated_at (timestamptz)
 
 ## Relationships
 - users.id -> auth.users.id
@@ -113,10 +114,10 @@
 - tags.created_by -> users.id
 - users_teams.user_id -> users.id
 - users_teams.team_id -> teams.id
-- knowledge_bases.org_id -> orgs.id
-- categories.knowledge_base_id -> knowledge_bases.id
+- knowledgebases.org_id -> orgs.id
+- categories.knowledgebase_id -> knowledgebases.id
 - articles.org_id -> orgs.id
 - articles.created_by -> users.id
 - articles.last_updated_by -> users.id
 - articles.category_id -> categories.id
-- articles.knowledge_base_id -> knowledge_bases.id
+- articles.knowledgebase_id -> knowledgebases.id

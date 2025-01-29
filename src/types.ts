@@ -92,7 +92,7 @@ export interface Category {
   id: string;
   created_at: string;
   name: string;
-  knowledge_base_id: string;
+  knowledgebase_id: string;
   org_id: string;
 }
 
@@ -100,7 +100,12 @@ export interface Article {
   id: string;
   created_at: string;
   title: string;
+  description: string;
   content: string;
   category_id: string;
   org_id: string;
+  knowledgebase_id: string;
+  created_by: string;
+  last_updated_at: string;
+  last_updated_by: string;
 }

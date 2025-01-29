@@ -201,7 +201,7 @@ function App() {
         {
           event: "INSERT",
           schema: "public",
-          table: "knowledge_bases",
+          table: "knowledgebases",
           filter: `org_id=eq.${session.org_id}`,
         },
         (payload) => {
@@ -214,7 +214,7 @@ function App() {
         {
           event: "UPDATE",
           schema: "public",
-          table: "knowledge_bases",
+          table: "knowledgebases",
           filter: `org_id=eq.${session.org_id}`,
         },
         (payload) => {
@@ -227,7 +227,7 @@ function App() {
         {
           event: "DELETE",
           schema: "public",
-          table: "knowledge_bases",
+          table: "knowledgebases",
           filter: `org_id=eq.${session.org_id}`,
         },
         (payload) => {
