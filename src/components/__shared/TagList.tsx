@@ -157,7 +157,7 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
           key={tag.id}
           data-tag-id={tag.id}
           onClick={(e) => handleTagClick(e, tag.id, e.currentTarget)}
-          className="text-xs px-2 py-0.5 rounded-full font-semibold cursor-pointer hover:opacity-80"
+          className="text-xs px-2 py-0.5 rounded-md font-semibold cursor-pointer hover:opacity-80"
           style={{
             backgroundColor: tag.background_color,
             color: tag.text_color,
@@ -247,7 +247,7 @@ const TagList = ({ conversation, showAddButton = false }: TagListProps) => {
                         className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2"
                       >
                         <span
-                          className="text-xs px-2 py-0.5 rounded-full font-semibold cursor-pointer hover:opacity-80"
+                          className="text-xs px-2 py-0.5 rounded-md font-semibold cursor-pointer hover:opacity-80"
                           style={{
                             backgroundColor: tag.background_color,
                             color: tag.text_color,

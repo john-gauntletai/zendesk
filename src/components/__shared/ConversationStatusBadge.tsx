@@ -66,7 +66,7 @@ const ConversationStatusBadge = ({ conversation }: ConversationStatusBadgeProps)
         }}
         className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase cursor-pointer hover:opacity-80 ${
           conversation.status === "open"
-            ? "bg-error/20 text-error"
+            ? "bg-base-300 text-base-content"
             : "bg-success/20 text-success"
         }`}
       >

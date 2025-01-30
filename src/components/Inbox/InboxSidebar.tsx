@@ -51,7 +51,7 @@ const InboxSidebar = ({
               {DEFAULT_ALL_FILTERS.map((filter) => (
                 <button
                   key={filter.label}
-                  className={`flex items-center justify-between w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                  className={`flex items-center justify-between w-full px-2 py-1 font-medium text-sm hover:bg-base-200 rounded-lg ${
                     isFilterActive(filter.query)
                       ? "bg-base-200 text-primary"
                       : ""
@@ -89,7 +89,7 @@ const InboxSidebar = ({
               {DEFAULT_ASSIGNED_TO_ME_FILTERS(userId).map((filter) => (
                 <button
                   key={filter.label}
-                  className={`flex items-center justify-between w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                  className={`flex items-center justify-between w-full px-2 py-1 font-medium text-sm hover:bg-base-200 rounded-lg ${
                     isFilterActive(filter.query)
                       ? "bg-base-200 text-primary"
                       : ""

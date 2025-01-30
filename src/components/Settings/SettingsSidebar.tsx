@@ -58,7 +58,7 @@ const SettingsSidebar = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                  className={`flex items-center w-full px-2 py-1 font-medium text-sm hover:bg-base-200 rounded-lg ${
                     isActive(item.path) ? "bg-base-200 text-primary" : ""
                   }`}
                 >
@@ -89,7 +89,7 @@ const SettingsSidebar = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                  className={`flex items-center w-full px-2 py-1 font-medium text-sm hover:bg-base-200 rounded-lg ${
                     isActive(item.path) ? "bg-base-200 text-primary" : ""
                   }`}
                 >
@@ -120,7 +120,7 @@ const SettingsSidebar = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center w-full px-2 py-1 text-sm hover:bg-base-200 rounded-lg ${
+                  className={`flex items-center w-full px-2 py-1 font-medium text-sm hover:bg-base-200 rounded-lg ${
                     isActive(item.path) ? "bg-base-200 text-primary" : ""
                   }`}
                 >
