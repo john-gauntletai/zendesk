@@ -1,5 +1,5 @@
 import { Message } from "../../../types";
-import { format, isToday, isYesterday, differenceInMinutes } from "date-fns";
+import { format, isToday, isYesterday, differenceInMinutes, startOfDay, parseISO } from "date-fns";
 import Avatar from "../../__shared/Avatar";
 import { useCustomerStore, useUserStore } from "../../../store";
 
@@ -37,15 +37,19 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
     return timeDiff > 5;
   };
 
-  const formatMessageDate = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isYesterday(date)) return "Yesterday";
+  const formatMessageDate = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    const today = startOfDay(new Date());
+    const messageDay = startOfDay(date);
+
+    if (today.getTime() === messageDay.getTime()) return "Today";
+    if (isYesterday(messageDay)) return "Yesterday";
     return format(date, "MMMM d, yyyy");
   };
 
   const groupedMessages = messages.reduce(
     (groups: Record<string, Message[]>, message) => {
-      const date = format(new Date(message.created_at), "yyyy-MM-dd");
+      const date = format(parseISO(message.created_at), "yyyy-MM-dd");
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -63,7 +67,7 @@ const MessageList = ({ messages, channel }: MessageListProps) => {
             <div className="flex items-center my-6">
               <div className="flex-1 border-t border-base-300"></div>
               <div className="mx-4 text-xs font-medium text-base-content/60">
-                {formatMessageDate(new Date(date))}
+                {formatMessageDate(date)}
               </div>
               <div className="flex-1 border-t border-base-300"></div>
             </div>
