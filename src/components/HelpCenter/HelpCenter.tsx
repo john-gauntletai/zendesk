@@ -1,6 +1,6 @@
 import { useEffect, createContext, useContext, useState } from "react";
 import { useParams, Outlet, useLocation, Link } from "react-router";
-import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CommandLineIcon } from "@heroicons/react/24/outline";
 import { useKnowledgeBaseStore } from "../../store";
 import { KnowledgeBase, Category, Article } from "../../types";
 
@@ -236,7 +236,7 @@ const HelpCenter = () => {
             <div className="flex items-center gap-2 text-sm text-base-content/70">
               <span>Powered by</span>
               <div className="flex items-center gap-1">
-                <SparklesIcon className="w-4 h-4" />
+                <CommandLineIcon className="w-4 h-4" />
                 <span className="font-medium">Superhero</span>
               </div>
             </div>
