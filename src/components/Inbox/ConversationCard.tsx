@@ -2,8 +2,8 @@ import { Message, Customer, Conversation } from "../../types";
 import { EnvelopeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/solid";
 import { format, isWithinInterval, subDays, subHours } from "date-fns";
 import Avatar from "../__shared/Avatar";
-import TagList from "../TagList";
-import ConversationStatusBadge from "../ConversationStatusBadge";
+import TagList from "../__shared/TagList";
+import ConversationStatusBadge from "../__shared/ConversationStatusBadge";
 import { useUserStore } from "../../store";
 
 interface ConversationCardProps {

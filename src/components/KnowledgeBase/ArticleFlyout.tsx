@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useKnowledgeBaseStore, useSessionStore } from "../../store";
 import { Article, Category } from "../../types";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { toast } from "react-hot-toast";
 import Avatar from "../__shared/Avatar";
+import TiptapEditor from './TiptapEditor';
+import { createPortal } from "react-dom";
 
 interface ArticleFlyoutProps {
   isOpen: boolean;
@@ -14,6 +16,57 @@ interface ArticleFlyoutProps {
   knowledgeBaseId: string;
   categories: Category[];
 }
+
+const CategoryDropdown = ({ 
+  isOpen, 
+  triggerRef, 
+  categories, 
+  categoryId, 
+  setCategoryId, 
+  onClose 
+}: {
+  isOpen: boolean;
+  triggerRef: React.RefObject<HTMLButtonElement>;
+  categories: Category[];
+  categoryId: string;
+  setCategoryId: (id: string) => void;
+  onClose: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  const rect = triggerRef.current?.getBoundingClientRect();
+  if (!rect) return null;
+
+  return createPortal(
+    <ul 
+      className="menu p-2 shadow-lg bg-base-100 rounded-box border border-base-300 w-[var(--width)] max-h-60 overflow-y-auto"
+      style={{
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 100,
+      }}
+    >
+      {categories.map((category) => (
+        <li key={category.id}>
+          <button
+            type="button"
+            className="flex items-center gap-2"
+            onClick={() => {
+              setCategoryId(category.id);
+              onClose();
+            }}
+          >
+            <span className="text-xl">{category.emoji_icon}</span>
+            <span>{category.name}</span>
+          </button>
+        </li>
+      ))}
+    </ul>,
+    document.body
+  );
+};
 
 const ArticleFlyout = ({ 
   isOpen, 
@@ -27,10 +80,12 @@ const ArticleFlyout = ({
   const { session } = useSessionStore();
   const [title, setTitle] = useState(article?.title || "");
   const [description, setDescription] = useState(article?.description || "");
-  const [content, setContent] = useState(article?.content || "");
+  const [body, setBody] = useState(article?.body || '{"type":"doc","content":[{"type":"paragraph"}]}');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [categoryId, setCategoryId] = useState(article?.category_id || "");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const handleSave = async (isDraft: boolean) => {
     if (!title.trim()) {
@@ -48,7 +103,7 @@ const ArticleFlyout = ({
       const articleData = {
         title: title.trim(),
         description: description.trim(),
-        content: content.trim(),
+        body: body.trim(),
         category_id: categoryId,
         knowledgebase_id: knowledgeBaseId,
         org_id: session!.org_id,
@@ -77,6 +132,10 @@ const ArticleFlyout = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
   if (!isOpen) return null;
@@ -121,7 +180,7 @@ const ArticleFlyout = ({
 
           {/* Editor Area */}
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8">
+            <div className="max-w-3xl mx-auto rounded-lg p-8">
               <input
                 type="text"
                 value={title}
@@ -136,17 +195,15 @@ const ArticleFlyout = ({
                   onChange={(e) => setDescription(e.target.value.slice(0, 140))}
                   placeholder="Add a brief description..."
                   maxLength={140}
-                  className="w-full text-lg text-base-content/70 bg-transparent border-none focus:outline-none"
+                  className="w-full text-xl font-semibold text-base-content/70 bg-transparent border-none focus:outline-none"
                 />
                 <div className="absolute right-0 bottom-0 text-xs text-base-content/50">
                   {description.length}/140
                 </div>
               </div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your article content here..."
-                className="w-full min-h-[500px] bg-transparent border-none focus:outline-none resize-none"
+              <TiptapEditor
+                content={body}
+                onChange={setBody}
               />
             </div>
           </div>
@@ -172,25 +229,42 @@ const ArticleFlyout = ({
                 <label className="text-sm text-base-content/70">Status</label>
                 <div className="mt-1">
                   <span className="px-2 py-1 text-sm rounded-full bg-base-200">
-                    {status}
+                    {capitalizeFirstLetter(status)}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm text-base-content/70">Category</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="select select-bordered select-sm w-full mt-1"
+                <label className="label">
+                  <span className="label-text">Category</span>
+                </label>
+                <button
+                  type="button"
+                  ref={triggerRef}
+                  className="select select-bordered w-full flex items-center justify-between"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  {categoryId ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">
+                        {categories.find(c => c.id === categoryId)?.emoji_icon}
+                      </span>
+                      <span>
+                        {categories.find(c => c.id === categoryId)?.name}
+                      </span>
+                    </div>
+                  ) : (
+                    "Select a category"
+                  )}
+                </button>
+                <CategoryDropdown
+                  isOpen={isDropdownOpen}
+                  triggerRef={triggerRef}
+                  categories={categories}
+                  categoryId={categoryId}
+                  setCategoryId={setCategoryId}
+                  onClose={() => setIsDropdownOpen(false)}
+                />
               </div>
 
               {!isNewArticle && article && (

@@ -1,7 +1,7 @@
-import { Conversation, Tag } from "../types";
+import { Conversation, Tag } from "../../types";
 import { useState, useRef, useEffect } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { useTagsStore, useConversationStore } from "../store";
+import { useTagsStore, useConversationStore } from "../../store";
 import Portal from "./Portal";
 
 interface TagListProps {

@@ -14,9 +14,9 @@ import {
 } from "../../../store";
 import { Tag, CreateMessagePayload } from "../../../types";
 import toast from "react-hot-toast";
-import TagList from "../../TagList";
-import ConversationStatusBadge from "../../ConversationStatusBadge";
-import Portal from "../../Portal";
+import TagList from "../../__shared/TagList";
+import ConversationStatusBadge from "../../__shared/ConversationStatusBadge";
+import Portal from "../../__shared/Portal";
 
 const ConversationView = () => {
   const [messageInput, setMessageInput] = useState("");

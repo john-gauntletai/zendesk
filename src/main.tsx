@@ -9,8 +9,12 @@ import Inbox from "./components/Inbox/Inbox.tsx";
 import Reports from "./components/Reports/Reports.tsx";
 import KnowledgeBase from "./components/KnowledgeBase/KnowledgeBase.tsx";
 import Settings from "./components/Settings/Settings.tsx";
-import NotFound from "./components/NotFound.tsx";
+import NotFound from "./components/__shared/NotFound.tsx";
 import AvengersHotline from "./components/AvengersHotline/AvengersHotline.tsx";
+import HelpCenter from "./components/HelpCenter/HelpCenter.tsx";
+import HelpCenterAllCategories from "./components/HelpCenter/HelpCenterAllCategories.tsx";
+import HelpCenterCategory from "./components/HelpCenter/HelpCenterCategory.tsx";
+import HelpCenterArticle from "./components/HelpCenter/HelpCenterArticle.tsx";
 import App from "./App.tsx";
 import Profile from "./components/Settings/Profile";
 import Teammates from "./components/Settings/Teammates";
@@ -51,6 +55,11 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/login" element={<SignIn isSignInProp />} />
         <Route path="/signup" element={<SignIn />} />
         <Route path="/avengers-hotline" element={<AvengersHotline />} />
+        <Route path="/help/:kbId" element={<HelpCenter />}>
+          <Route index element={<HelpCenterAllCategories />}/>
+          <Route path="category/:categoryId" element={<HelpCenterCategory />}/>
+          <Route path="article/:articleId" element={<HelpCenterArticle />}/>
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>

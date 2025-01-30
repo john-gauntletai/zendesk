@@ -92,6 +92,7 @@ export interface Category {
   id: string;
   created_at: string;
   name: string;
+  emoji_icon: string;
   knowledgebase_id: string;
   org_id: string;
 }
@@ -99,9 +100,10 @@ export interface Category {
 export interface Article {
   id: string;
   created_at: string;
+  status: 'draft' | 'published';
   title: string;
   description: string;
-  content: string;
+  body: string;
   category_id: string;
   org_id: string;
   knowledgebase_id: string;

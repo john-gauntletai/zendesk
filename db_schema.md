@@ -85,13 +85,14 @@
 - id (uuid, PK)
 - created_at (timestamptz)
 - name (text)
+- emoji_icon (text)
 - knowledgebase_id (uuid, FK references knowledgebases.id)
 
 ### articles
 - id (uuid, PK)
 - created_at (timestamptz)
 - title (text)
-- content (text)
+- body (text)
 - status (text)
 - category_id (uuid, FK references categories.id)
 - knowledgebase_id (uuid, FK references knowledgebases.id)

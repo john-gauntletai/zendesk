@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
 import Avatar from "../__shared/Avatar";
 import { useSessionStore } from '../../store';
-import Portal from "../Portal";
+import Portal from "../__shared/Portal";
 import {
   InboxIcon,
   ChartBarIcon,

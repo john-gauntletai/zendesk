@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Conversation } from "../types";
-import { useConversationStore } from "../store";
+import { Conversation } from "../../types";
+import { useConversationStore } from "../../store";
 import Portal from "./Portal";
 
 interface ConversationStatusBadgeProps {

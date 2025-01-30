@@ -105,6 +105,12 @@ interface KnowledgeBaseState {
   addArticle: (article: Article) => void;
   receiveArticleUpdate: (article: Article) => void;
   removeArticle: (id: string) => void;
+  deleteCategory: (categoryId: string) => Promise<void>;
+  deleteArticle: (articleId: string) => Promise<void>;
+  fetchKnowledgeBaseById: (kbId: string) => Promise<KnowledgeBase | null>;
+  fetchCategoriesByKnowledgeBaseId: (kbId: string) => Promise<Category[]>;
+  fetchArticlesByKnowledgeBaseId: (kbId: string) => Promise<Article[]>;
+  deleteKnowledgeBase: (kbId: string) => Promise<void>;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -478,6 +484,33 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
       set({ knowledgeBases: data || [] });
     }
   },
+  fetchKnowledgeBaseById: async (kbId: string) => {
+    const { data, error } = await supabase.from("knowledgebases").select("*").eq("id", kbId).single();
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch knowledge base");
+    } else {
+      return data;
+    }
+  },
+  fetchCategoriesByKnowledgeBaseId: async (kbId: string) => {
+    const { data, error } = await supabase.from("categories").select("*").eq("knowledgebase_id", kbId);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch categories");
+    } else {
+      return data;
+    }
+  },
+  fetchArticlesByKnowledgeBaseId: async (kbId: string) => {
+    const { data, error } = await supabase.from("articles").select("*").eq("knowledgebase_id", kbId);
+    if (error) {
+      console.error(error);
+      toast.error("Failed to fetch articles");
+    } else {
+      return data;
+    }
+  },
   fetchCategories: async (orgId: string) => {
     const { data, error } = await supabase.from("categories").select("*").eq("org_id", orgId);
     if (error) {
@@ -504,7 +537,11 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     }
   },
   updateKnowledgeBase: async (kb: KnowledgeBase) => {
-    const { data, error } = await supabase.from("knowledgebases").update(kb).eq("id", kb.id);
+    const { error } = await supabase
+      .from("knowledgebases")
+      .update(kb)
+      .eq("id", kb.id);
+
     if (error) {
       console.error(error);
       toast.error("Failed to update knowledge base");
@@ -518,7 +555,11 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     }
   },
   updateCategory: async (category: Category) => {
-    const { data, error } = await supabase.from("categories").update(category).eq("id", category.id);
+    const { error } = await supabase
+      .from("categories")
+      .update(category)
+      .eq("id", category.id);
+
     if (error) {
       console.error(error);
       toast.error("Failed to update category");
@@ -574,4 +615,37 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     set((state) => ({
       articles: state.articles.filter((a) => a.id !== id),
     })),
+  deleteCategory: async (categoryId: string) => {
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", categoryId);
+
+    if (error) {
+      console.error(error);
+      toast.error("Failed to delete category");
+    }
+  },
+  deleteArticle: async (articleId: string) => {
+    const { error } = await supabase
+      .from("articles")
+      .delete()
+      .eq("id", articleId);
+
+    if (error) {
+      console.error(error);
+      toast.error("Failed to delete article");
+    }
+  },
+  deleteKnowledgeBase: async (kbId: string) => {
+    const { error } = await supabase
+      .from("knowledgebases")
+      .delete()
+      .eq("id", kbId);
+
+    if (error) {
+      console.error(error);
+      toast.error("Failed to delete knowledge base");
+    }
+  },
 }));

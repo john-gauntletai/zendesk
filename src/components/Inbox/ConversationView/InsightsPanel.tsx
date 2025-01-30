@@ -1,7 +1,7 @@
 import { useCustomerStore, useConversationStore, useUserStore } from "../../../store";
 import Avatar from "../../__shared/Avatar";
-import TagList from "../../TagList";
-import ConversationStatusBadge from "../../ConversationStatusBadge";
+import TagList from "../../__shared/TagList";
+import ConversationStatusBadge from "../../__shared/ConversationStatusBadge";
 
 const InsightsPanel = () => {
   const { customers } = useCustomerStore();

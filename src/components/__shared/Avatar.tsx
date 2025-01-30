@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { User } from "../../types";
-import Portal from "../Portal";
+import Portal from "./Portal";
 import { useRolesStore, useTeamsStore } from "../../store";
 import Avvvatars from "avvvatars-react";
 

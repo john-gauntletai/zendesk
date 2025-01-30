@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { PlusIcon, FolderIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, FolderIcon, DocumentTextIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { KnowledgeBase, Category, Article } from "../../types";
-import CreateCategoryModal from "./CreateCategoryModal";
 import ArticleFlyout from "./ArticleFlyout";
+import DeleteCategoryModal from "./DeleteCategoryModal";
+import DeleteArticleModal from "./DeleteArticleModal";
+import EditKnowledgeBaseModal from "./EditKnowledgeBaseModal";
+import DeleteKnowledgeBaseModal from "./DeleteKnowledgeBaseModal";
+import { Link } from "react-router";
+import CreateOrEditCategoryModal from "./CreateOrEditCategoryModal";
 
 interface KnowledgeBaseCardProps {
   knowledgeBase: KnowledgeBase;
@@ -11,9 +16,42 @@ interface KnowledgeBaseCardProps {
   articles: Article[];
 }
 
+const getPlainTextFromJson = (jsonString: string) => {
+  try {
+    const json = JSON.parse(jsonString);
+    let text = '';
+
+    const extractTextFromNode = (node: any) => {
+      if (node.type === 'text') {
+        text += node.text;
+      } else if (node.type === 'paragraph') {
+        node.content?.forEach(extractTextFromNode);
+        text += ' ';
+      } else if (node.type === 'heading') {
+        node.content?.forEach(extractTextFromNode);
+        text += ' ';
+      } else if (node.content) {
+        node.content.forEach(extractTextFromNode);
+      }
+    };
+
+    json.content?.forEach(extractTextFromNode);
+    return text.trim();
+  } catch (error) {
+    console.error('Error parsing article body:', error);
+    return '';
+  }
+};
+
 const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: KnowledgeBaseCardProps) => {
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false);
   const [isArticleFlyoutOpen, setIsArticleFlyoutOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [deletingArticle, setDeletingArticle] = useState<Article | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const kbCategories = categories.filter((cat) => cat.knowledgebase_id === kb.id);
   const kbArticles = articles.filter(
     (article) =>
@@ -44,12 +82,41 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
                 "📚"
               )}
             </div>
-            <div>
+            <div className="pr-4">
               <h2 className="text-xl font-bold">{kb.name}</h2>
               <p className="text-base-content/70">{kb.description}</p>
             </div>
           </div>
-          <button className="btn btn-sm">Preview</button>
+          <div className="flex items-center gap-2">
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="btn btn-ghost btn-sm btn-square">
+                <EllipsisVerticalIcon className="w-5 h-5" />
+              </label>
+              <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300">
+                <li>
+                  <button onClick={() => setIsEditModalOpen(true)}>
+                    Edit Knowledge Base
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="text-error"
+                  >
+                    Delete Knowledge Base
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <Link 
+              to={`/help/${kb.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm"
+            >
+              Preview
+            </Link>
+          </div>
         </div>
 
         {/* Categories Section */}
@@ -92,13 +159,26 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
                 <tbody>
                   {kbCategories.map((category) => (
                     <tr key={category.id}>
-                      <td>{category.name}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{category.emoji_icon}</span>
+                          <span>{category.name}</span>
+                        </div>
+                      </td>
                       <td>
                         {articles.filter((a) => a.category_id === category.id).length}
                       </td>
                       <td>
-                        <button className="btn btn-ghost btn-xs">Edit</button>
-                        <button className="btn btn-ghost btn-xs text-error">
+                        <button 
+                          className="btn btn-ghost btn-xs"
+                          onClick={() => setEditingCategory(category)}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          className="btn btn-ghost btn-xs text-error"
+                          onClick={() => setDeletingCategory(category)}
+                        >
                           Delete
                         </button>
                       </td>
@@ -117,6 +197,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
             <button 
               className="btn btn-sm btn-ghost"
               disabled={kbCategories.length === 0}
+              onClick={handleCreateArticle}
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               New Article
@@ -149,30 +230,53 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
                     <th>Title</th>
                     <th>Preview</th>
                     <th>Category</th>
-                    <th>Author</th>
                     <th>Last Updated</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {kbArticles.map((article) => (
                     <tr key={article.id}>
-                      <td className="font-medium">{article.title}</td>
-                      <td className="max-w-md">
+                      <td className="font-medium max-w-sm">{article.title}</td>
+                      <td className="max-w-sm">
                         <p className="truncate text-base-content/70">
-                          {article.content}
+                          {getPlainTextFromJson(article.body)}
                         </p>
                       </td>
                       <td>
-                        {categories.find((c) => c.id === article.category_id)?.name}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">
+                            {categories.find((c) => c.id === article.category_id)?.emoji_icon}
+                          </span>
+                          <span>
+                            {categories.find((c) => c.id === article.category_id)?.name}
+                          </span>
+                        </div>
                       </td>
-                      <td>Author Name</td>
                       <td className="text-base-content/70">
-                        {format(new Date(article.created_at), "MMM d, yyyy")}
+                        {format(new Date(article.last_updated_at), "MMM d, yyyy")}
                       </td>
                       <td>
-                        <button className="btn btn-ghost btn-xs">Edit</button>
-                        <button className="btn btn-ghost btn-xs text-error">
+                        <div className={`badge font-semibold ${
+                          article.status === 'published' 
+                            ? 'badge-neutral' 
+                            : ''
+                        } badge-sm`}>
+                          {article.status === 'published' ? 'Published' : 'Draft'}
+                        </div>
+                      </td>
+                      <td>
+                        <button 
+                          className="btn btn-ghost btn-xs"
+                          onClick={() => setEditingArticle(article)}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          className="btn btn-ghost btn-xs text-error"
+                          onClick={() => setDeletingArticle(article)}
+                        >
                           Delete
                         </button>
                       </td>
@@ -185,19 +289,65 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         </div>
       </div>
 
-      <CreateCategoryModal 
+      <CreateOrEditCategoryModal 
         isOpen={isCreateCategoryModalOpen}
+        isNewCategory
         onClose={() => setIsCreateCategoryModalOpen(false)}
         knowledgeBaseId={kb.id}
       />
 
-      {isArticleFlyoutOpen && (
+      {(isArticleFlyoutOpen || editingArticle) && (
         <ArticleFlyout
-          isOpen={isArticleFlyoutOpen}
-          onClose={() => setIsArticleFlyoutOpen(false)}
-          isNewArticle
+          isOpen={true}
+          onClose={() => {
+            setIsArticleFlyoutOpen(false);
+            setEditingArticle(null);
+          }}
+          isNewArticle={!editingArticle}
+          article={editingArticle || undefined}
           knowledgeBaseId={kb.id}
           categories={kbCategories}
+        />
+      )}
+
+      {editingCategory && (
+        <CreateOrEditCategoryModal
+          isOpen={true}
+          onClose={() => setEditingCategory(null)}
+          category={editingCategory}
+          knowledgeBaseId={kb.id}
+        />
+      )}
+
+      {deletingCategory && (
+        <DeleteCategoryModal
+          isOpen={true}
+          onClose={() => setDeletingCategory(null)}
+          category={deletingCategory}
+        />
+      )}
+
+      {deletingArticle && (
+        <DeleteArticleModal
+          isOpen={true}
+          onClose={() => setDeletingArticle(null)}
+          article={deletingArticle}
+        />
+      )}
+
+      {isEditModalOpen && (
+        <EditKnowledgeBaseModal
+          isOpen={true}
+          onClose={() => setIsEditModalOpen(false)}
+          knowledgeBase={kb}
+        />
+      )}
+
+      {isDeleteModalOpen && (
+        <DeleteKnowledgeBaseModal
+          isOpen={true}
+          onClose={() => setIsDeleteModalOpen(false)}
+          knowledgeBase={kb}
         />
       )}
     </div>

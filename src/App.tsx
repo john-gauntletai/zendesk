@@ -16,7 +16,17 @@ import LandingPage from "./components/LandingPage";
 import Onboarding from "./components/Onboarding";
 import Sidebar from "./components/Sidebar/Sidebar";
 import "./App.css";
-import { Message, User, Conversation, Customer, Tag, Team, KnowledgeBase, Category, Article } from "./types";
+import {
+  Message,
+  User,
+  Conversation,
+  Customer,
+  Tag,
+  Team,
+  KnowledgeBase,
+  Category,
+  Article,
+} from "./types";
 
 function App() {
   const { isLoading, session, fetchSession } = useSessionStore();
@@ -194,7 +204,7 @@ function App() {
       )
       .subscribe();
 
-      const kbSubscription = supabase
+    const kbSubscription = supabase
       .channel("knowledgebases")
       .on(
         "postgres_changes",
@@ -288,8 +298,7 @@ function App() {
 
   // Tags subscription
   useEffect(() => {
-    if (!session) return;
-
+    if (!session || !conversations?.length) return;
     const tagsSubscription = supabase
       .channel("tags")
       .on(
@@ -330,7 +339,8 @@ function App() {
           const deletedTag = payload.old as Tag;
           removeTag(deletedTag);
         }
-      );
+      )
+      .subscribe();
 
     const conversationsTagsSubscription = supabase
       .channel("conversations_tags")
@@ -364,7 +374,7 @@ function App() {
           const deletedConversationTag = payload.old as ConversationTag;
           fetchConversationById(deletedConversationTag.conversation_id);
         }
-      );
+      ).subscribe();
 
     return () => {
       tagsSubscription.unsubscribe();
@@ -373,38 +383,38 @@ function App() {
   }, [session, conversations]);
 
   useEffect(() => {
-    if (!session || !teams?.length) { 
-      return; 
+    if (!session || !teams?.length) {
+      return;
     }
 
     const usersTeamsSubscription = supabase
       .channel("users_teams")
       .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "users_teams",
-            filter: `team_id=in.(${teams.map((t) => t.id).join(",")})`,
-          },
-          (payload) => {
-            const newUserTeam = payload.new as UserTeam;
-            fetchTeamById(newUserTeam.team_id);
-          }
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "DELETE",
-            schema: "public",
-            table: "users_teams",
-            filter: `team_id=in.(${teams.map((t) => t.id).join(",")})`,
-          },
-          (payload) => {
-            const deletedUserTeam = payload.old as UserTeam;
-            fetchTeamById(deletedUserTeam.team_id);
-          }
-        )
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "users_teams",
+          filter: `team_id=in.(${teams.map((t) => t.id).join(",")})`,
+        },
+        (payload) => {
+          const newUserTeam = payload.new as UserTeam;
+          fetchTeamById(newUserTeam.team_id);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "users_teams",
+          filter: `team_id=in.(${teams.map((t) => t.id).join(",")})`,
+        },
+        (payload) => {
+          const deletedUserTeam = payload.old as UserTeam;
+          fetchTeamById(deletedUserTeam.team_id);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -516,10 +526,10 @@ function App() {
       )
       .subscribe();
 
-      return () => {
-        categoriesSubscription.unsubscribe();
-        articlesSubscription.unsubscribe();
-      };
+    return () => {
+      categoriesSubscription.unsubscribe();
+      articlesSubscription.unsubscribe();
+    };
   }, [session, knowledgeBases]);
 
   if (isLoading) {

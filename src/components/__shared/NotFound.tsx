@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import avengersLogo from '../assets/avengers-logo.png';
+import avengersLogo from '../../assets/avengers-logo.png';
 
 const NotFound = () => {
   return (

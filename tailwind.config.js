@@ -16,7 +16,8 @@ export default {
   },
   plugins: [
     require('@tailwindcss/line-clamp'),
-    require('daisyui')
+    require('daisyui'),
+    require('@tailwindcss/typography'),
   ],
   daisyui: {
     themes: ['light', 'fantasy', 'lofi', 'cupcake', 'valentine', 'business', 'cyberpunk'],
