@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { PlusIcon, FolderIcon, DocumentTextIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, FolderIcon, DocumentTextIcon, EllipsisVerticalIcon, ArrowTopRightOnSquareIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { KnowledgeBase, Category, Article } from "../../types";
 import ArticleFlyout from "./ArticleFlyout";
 import DeleteCategoryModal from "./DeleteCategoryModal";
@@ -9,6 +9,7 @@ import EditKnowledgeBaseModal from "./EditKnowledgeBaseModal";
 import DeleteKnowledgeBaseModal from "./DeleteKnowledgeBaseModal";
 import { Link } from "react-router";
 import CreateOrEditCategoryModal from "./CreateOrEditCategoryModal";
+import BuildWithAIModal from "./BuildWithAIModal";
 
 interface KnowledgeBaseCardProps {
   knowledgeBase: KnowledgeBase;
@@ -52,6 +53,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
   const [deletingArticle, setDeletingArticle] = useState<Article | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBuildWithAIModalOpen, setIsBuildWithAIModalOpen] = useState(false);
   const kbCategories = categories.filter((cat) => cat.knowledgebase_id === kb.id);
   const kbArticles = articles.filter(
     (article) =>
@@ -108,12 +110,20 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
                 </li>
               </ul>
             </div>
+            <button 
+              className="btn btn-sm"
+              onClick={() => setIsBuildWithAIModalOpen(true)}
+            >
+              <SparklesIcon className="w-4 h-4" />
+              Build with AI
+            </button>
             <Link 
               to={`/help/${kb.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-sm"
             >
+              <ArrowTopRightOnSquareIcon className="w-4 h-4" />
               Preview
             </Link>
           </div>
@@ -347,6 +357,14 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         <DeleteKnowledgeBaseModal
           isOpen={true}
           onClose={() => setIsDeleteModalOpen(false)}
+          knowledgeBase={kb}
+        />
+      )}
+
+      {isBuildWithAIModalOpen && (
+        <BuildWithAIModal
+          isOpen={true}
+          onClose={() => setIsBuildWithAIModalOpen(false)}
           knowledgeBase={kb}
         />
       )}
