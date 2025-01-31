@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const supabase = require('./supabase');
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -25,6 +26,22 @@ app.use(cors({
 
 app.use(express.json());
 
+// Auth middleware
+const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  if (!authHeader) return res.sendStatus(401)
+
+    try {
+    const { data: { user }, error } = await supabase.auth.getUser(authHeader.split(' ')[1]);
+    if (error) throw error
+    req.user = user
+    next()
+  } catch (error) {
+    console.error('Auth error:', error);
+    return res.sendStatus(403)
+  }
+}
+
 // Simple request logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
@@ -32,7 +49,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+app.use('/api', authenticateUser, require('./routes'));
+
+// Public routes
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -40,6 +59,8 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV
   });
 });
+
+// Protected routes - use auth middleware
 
 // Error handling middleware
 app.use((err, req, res, next) => {
