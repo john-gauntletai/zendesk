@@ -7,15 +7,25 @@ const { ToolNode } = require("@langchain/langgraph/prebuilt");
 const { StateGraph, MessagesAnnotation } = require("@langchain/langgraph");
 const supabase = require('../supabase');
 
-// Define the tools for the agent to use
+// Define the tools and models
 const tools = [new TavilySearchResults({ maxResults: 3 })];
 const toolNode = new ToolNode(tools);
 
-// Create a model and give it access to the tools
 const model = new ChatOpenAI({
   modelName: "gpt-4-turbo-preview",
   temperature: 0,
 }).bindTools(tools);
+
+// Create separate workflows for categories and articles
+function createWorkflow() {
+  return new StateGraph(MessagesAnnotation)
+    .addNode("agent", callModel)
+    .addEdge("__start__", "agent")
+    .addNode("tools", toolNode)
+    .addEdge("tools", "agent")
+    .addConditionalEdges("agent", shouldContinue)
+    .compile();
+}
 
 // Define the function that determines whether to continue or not
 function shouldContinue({ messages }) {
@@ -32,174 +42,170 @@ async function callModel(state) {
   return { messages: [response] };
 }
 
-// Create the agent workflow
-const workflow = new StateGraph(MessagesAnnotation)
-  .addNode("agent", callModel)
-  .addEdge("__start__", "agent")
-  .addNode("tools", toolNode)
-  .addEdge("tools", "agent")
-  .addConditionalEdges("agent", shouldContinue);
-
-const app = workflow.compile();
-
-// Add this helper function at the top
+// Update the helper function to handle both arrays and objects
 function extractJSON(text) {
   try {
     // First try direct parse
     return JSON.parse(text);
   } catch (e) {
-    // Look for JSON structure in the text
-    const match = text.match(/\{[\s\S]*\}/);
+    // Look for JSON structure in the text - either array or object
+    const match = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
     if (match) {
       try {
         return JSON.parse(match[0]);
       } catch (e) {
+        console.error("Parsing error:", e);
+        console.error("Matched text:", match[0]);
         throw new Error("Could not parse valid JSON from response");
       }
     }
+    console.error("Raw response:", text);
     throw new Error("No JSON structure found in response");
   }
+}
+
+// Also update the categories prompt to be more explicit about array format
+async function generateCategories(kb, brandVoiceExample) {
+  const categoriesPrompt = `You are an expert help center architect with access to a web search tool. Your task is to:
+
+1. Research ${kb.name} using the search tool to understand:
+   - Common customer questions and problems
+   - Industry best practices
+   - Key features and use cases
+   - Competitor help centers
+
+2. Based on your research, identify 4-6 key categories that would best serve users of ${kb.name}. 
+   Each category should address a major area of user needs.
+
+CRITICAL: You must respond with ONLY a JSON array. No other text, no explanations.
+Format must be exactly like this (with real values):
+
+[
+  {
+    "name": "Getting Started",
+    "emoji_icon": "🚀",
+    "description": "Learn the basics and set up your account"
+  },
+  {
+    "name": "Account Management",
+    "emoji_icon": "👤",
+    "description": "Handle user settings and permissions"
+  }
+]`;
+
+  const workflow = createWorkflow();
+  const finalState = await workflow.invoke({
+    messages: [
+      new SystemMessage(categoriesPrompt),
+      new HumanMessage(`Create categories for ${kb.name}. Description: ${kb.description}. Remember to ONLY return the JSON array.`)
+    ],
+  });
+
+  const lastMessage = finalState.messages[finalState.messages.length - 1];
+  console.log("Raw categories response:", lastMessage.content); // For debugging
+
+  try {
+    const categories = extractJSON(lastMessage.content);
+    if (!Array.isArray(categories)) {
+      throw new Error("Response is not an array");
+    }
+    categories.forEach((category, index) => {
+      if (!category.name || !category.emoji_icon || !category.description) {
+        throw new Error(`Invalid category at index ${index}`);
+      }
+    });
+    return categories;
+  } catch (error) {
+    console.error("Categories parsing error:", error);
+    throw error;
+  }
+}
+
+async function generateArticlesForCategory(kb, category, brandVoiceExample, additionalNotes) {
+  const articlesPrompt = `You are an expert content writer with access to a web search tool. Your task is to:
+
+1. Research and create 3-5 helpful articles for the "${category.name}" category of ${kb.name}'s help center.
+   Category description: ${category.description}
+
+2. Each article should:
+   - Be 300-500 words
+   - Address real user needs discovered in research
+   - Include practical solutions and examples
+   - For harder instructions, use bullet points or lists
+   - Match this brand voice example: "${brandVoiceExample}"
+   - Consider these additional notes: "${additionalNotes}"
+
+IMPORTANT: Return ONLY a valid JSON array of articles with no additional text:
+[
+  {
+    "title": "string",
+    "description": "string",
+    "body": "string"
+  }
+]`;
+
+  const workflow = createWorkflow();
+  const finalState = await workflow.invoke({
+    messages: [
+      new SystemMessage(articlesPrompt),
+      new HumanMessage(`Create articles for the ${category.name} category`)
+    ],
+  });
+
+  return extractJSON(finalState.messages[finalState.messages.length - 1].content);
 }
 
 router.post('/:kbId/ai-generate', async (req, res) => {
   try {
     const { kbId } = req.params;
     const { brandVoiceExample, additionalNotes } = req.body;
+    const { data: user } = await supabase.from('users').select('org_id').eq('id', req.user.id).single();
+    const { data: kb } = await supabase.from('knowledgebases').select('*').eq('id', kbId).single();
 
-    const { data: user, error: userError } = await supabase.from('users').select('org_id').eq('id', req.user.id).single();
+    // Step 1: Generate categories
+    const categories = await generateCategories(kb, brandVoiceExample);
 
-    if (userError) throw userError;
-    const orgId = user.org_id;
-
-    // Get knowledge base details
-    const { data: kb, error: kbError } = await supabase
-      .from('knowledgebases')
-      .select('*')
-      .eq('id', kbId)
-      .single();
-
-    if (kbError) throw kbError;
-
-    // Update the system prompt to be more strict about JSON response
-    const systemPrompt = `You are an expert help center architect with access to a web search tool. Your task is to:
-
-1. First, research ${kb.name} using the search tool to understand:
-   - Common customer questions and problems
-   - Industry best practices
-   - Key features and use cases
-   - Competitor help centers
-
-2. Based on your research, identify 4-6 key categories that would best serve users of ${kb.name}. Each category should address a major area of user needs.
-
-3. For each category, research specific topics and create 3-5 helpful articles with about 300-500 words each. Each article should:
-   - Address real user needs discovered in research
-   - Include practical solutions and examples
-   - Match this brand voice example: "${brandVoiceExample}"
-   - Consider these additional notes: "${additionalNotes}"
-
-IMPORTANT: Your response must be a valid JSON object only, with no additional text before or after. Use this exact format:
-
-{
-  "categories": [
-    {
-      "name": "string",
-      "emoji_icon": "string",
-      "articles": [
-        {
-          "title": "string",
-          "description": "string", 
-          "body": "string"
-        }
-      ]
-    }
-  ]
-}`;
-
-    // Update the human message to be more explicit
-    const humanMessage = new HumanMessage(
-      `Research and create a help center structure for ${kb.name}. Description: ${kb.description}
-
-Remember to:
-1. Use the search tool to research thoroughly
-2. Return ONLY valid JSON in the specified format
-3. Include no explanation text - just the JSON object`
-    );
-
-    // Update the response handling
-    const finalState = await app.invoke({
-      messages: [new SystemMessage(systemPrompt), humanMessage],
-    });
-
-    const lastMessage = finalState.messages[finalState.messages.length - 1];
-    let generatedContent;
-    try {
-      generatedContent = extractJSON(lastMessage.content);
-      
-      // Validate the structure
-      if (!generatedContent.categories || !Array.isArray(generatedContent.categories)) {
-        throw new Error("Invalid response structure");
-      }
-      
-      // Validate each category has required fields
-      generatedContent.categories.forEach((category, index) => {
-        if (!category.name || !category.emoji_icon || !Array.isArray(category.articles)) {
-          throw new Error(`Invalid category structure at index ${index}`);
-        }
-        
-        category.articles.forEach((article, artIndex) => {
-          if (!article.title || !article.description || !article.body) {
-            throw new Error(`Invalid article structure in category ${index} at article ${artIndex}`);
-          }
-        });
-      });
-    } catch (error) {
-      console.error("Response parsing error:", error);
-      console.error("Raw response:", lastMessage.content);
-      throw new Error("Failed to parse AI response");
-    }
-
-    // Insert categories and articles into database
-    for (const category of generatedContent.categories) {
+    // Step 2: Create categories in database and generate articles for each
+    for (const categoryData of categories) {
       // Create category
       const { data: newCategory, error: categoryError } = await supabase
         .from('categories')
         .insert({
-          name: category.name,
-          emoji_icon: category.emoji_icon,
+          name: categoryData.name,
+          emoji_icon: categoryData.emoji_icon,
           knowledgebase_id: kbId,
-          org_id: orgId
+          org_id: user.org_id
         })
         .select()
         .single();
 
       if (categoryError) throw categoryError;
 
-      // Create articles for this category
-      for (const article of category.articles) {
-        const { error: articleError } = await supabase
-          .from('articles')
-          .insert({
-            title: article.title,
-            description: article.description,
-            body: JSON.stringify({
-              type: "doc",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: article.body }]
-                }
-              ]
-            }),
-            status: 'published',
-            category_id: newCategory.id,
-            knowledgebase_id: kbId,
-            org_id: orgId,
-            created_by: req.user.id,
-            last_updated_by: req.user.id,
-            last_updated_at: new Date().toISOString()
-          });
+      // Generate and create articles for this category
+      const articles = await generateArticlesForCategory(kb, categoryData, brandVoiceExample, additionalNotes);
 
-        if (articleError) throw articleError;
+      // Insert articles
+      for (const article of articles) {
+        await supabase.from('articles').insert({
+          title: article.title,
+          description: article.description,
+          body: JSON.stringify({
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: article.body }]
+              }
+            ]
+          }),
+          status: 'published',
+          category_id: newCategory.id,
+          knowledgebase_id: kbId,
+          org_id: user.org_id,
+          created_by: req.user.id,
+          last_updated_by: req.user.id,
+          last_updated_at: new Date().toISOString()
+        });
       }
     }
 

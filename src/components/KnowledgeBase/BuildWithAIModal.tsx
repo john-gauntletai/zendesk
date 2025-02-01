@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { KnowledgeBase } from "../../types";
 import { toast } from "react-hot-toast";
+import { useKnowledgeBaseStore } from "../../store";
 
 interface BuildWithAIModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ const BuildWithAIModal = ({
   onClose,
   knowledgeBase,
 }: BuildWithAIModalProps) => {
+  const { generateCategoriesAndArticles } = useKnowledgeBaseStore();
   const [step, setStep] = useState<1 | 2>(1);
   const [brandVoiceExample, setBrandVoiceExample] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
@@ -27,7 +29,7 @@ const BuildWithAIModal = ({
 
     setIsSubmitting(true);
     try {
-      // TODO: Implement AI generation
+      await generateCategoriesAndArticles(knowledgeBase.id, {brandVoiceExample, additionalNotes});
       toast.success("AI generation started");
       onClose();
     } catch (error) {
@@ -77,7 +79,7 @@ const BuildWithAIModal = ({
               <div>
                 <label className="label">
                   <span className="label-text font-medium">
-                    Brand Voice Example
+                    Brand Voice Notes / Example
                   </span>
                   <span className="label-text-alt text-base-content/70">
                     Required

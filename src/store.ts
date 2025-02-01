@@ -87,6 +87,7 @@ interface KnowledgeBaseState {
   knowledgeBases: KnowledgeBase[];
   categories: Category[];
   articles: Article[];
+  generateCategoriesAndArticles: (kbId: string) => Promise<void>;
   fetchKnowledgeBases: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchArticles: () => Promise<void>;
@@ -475,6 +476,20 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
   knowledgeBases: [],
   categories: [],
   articles: [],
+  generateCategoriesAndArticles: async (kbId: string, {brandVoiceExample, additionalNotes}: {brandVoiceExample: string, additionalNotes: string}) => {
+    const { data: { session } } = await supabase.auth.getSession()
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/knowledgebases/${kbId}/ai-generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({brandVoiceExample, additionalNotes})
+    });
+    const data = await response.json();
+    console.log(data);
+  },
   fetchKnowledgeBases: async (orgId: string) => {
     const { data, error } = await supabase.from("knowledgebases").select("*").eq("org_id", orgId);
     if (error) {
@@ -624,6 +639,10 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to delete category");
+    } else {
+      set((state) => ({
+        categories: state.categories.filter((c) => c.id !== categoryId),
+      }));
     }
   },
   deleteArticle: async (articleId: string) => {
@@ -635,6 +654,10 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to delete article");
+    } else {
+      set((state) => ({
+        articles: state.articles.filter((a) => a.id !== articleId),
+      }));
     }
   },
   deleteKnowledgeBase: async (kbId: string) => {
@@ -646,6 +669,10 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
     if (error) {
       console.error(error);
       toast.error("Failed to delete knowledge base");
+    } else {
+      set((state) => ({
+        knowledgeBases: state.knowledgeBases.filter((k) => k.id !== kbId),
+      }));
     }
   },
 }));
