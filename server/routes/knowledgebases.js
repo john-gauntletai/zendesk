@@ -310,40 +310,48 @@ function markdownToTipTap(markdown) {
 function parseInlineContent(tokens) {
   const content = [];
 
+  if (!tokens) return content;
+
   for (const token of tokens) {
     switch (token.type) {
       case 'text':
         content.push({
           type: 'text',
-          text: token.text
+          text: token.raw || token.text
         });
         break;
 
       case 'strong':
-        content.push({
-          type: 'text',
-          marks: [{ type: 'bold' }],
-          text: token.text
-        });
+        // Check if token has nested tokens
+        if (token.tokens) {
+          content.push({
+            type: 'text',
+            marks: [{ type: 'bold' }],
+            text: token.tokens.map(t => t.text).join('')
+          });
+        } else {
+          content.push({
+            type: 'text',
+            marks: [{ type: 'bold' }],
+            text: token.raw.replace(/\*\*/g, '') // Remove ** markers
+          });
+        }
         break;
 
       case 'em':
-        content.push({
-          type: 'text',
-          marks: [{ type: 'italic' }],
-          text: token.text
-        });
-        break;
-
-      case 'link':
-        // Handle link as a paragraph with text inside
-        content.push({
-          type: 'paragraph',
-          content: [{
+        if (token.tokens) {
+          content.push({
             type: 'text',
-            text: token.text
-          }]
-        });
+            marks: [{ type: 'italic' }],
+            text: token.tokens.map(t => t.text).join('')
+          });
+        } else {
+          content.push({
+            type: 'text',
+            marks: [{ type: 'italic' }],
+            text: token.raw.replace(/\*/g, '') // Remove * markers
+          });
+        }
         break;
 
       case 'code':
@@ -354,14 +362,22 @@ function parseInlineContent(tokens) {
         });
         break;
 
+      case 'link':
+        // Handle link as regular text for now
+        content.push({
+          type: 'text',
+          text: token.text
+        });
+        break;
+
       default:
-        if (token.text) {
+        if (token.text || token.raw) {
           content.push({
             type: 'text',
-            text: token.text
+            text: token.text || token.raw
           });
         } else {
-          console.log('Unhandled inline token type:', token.type);
+          console.log('Unhandled inline token type:', token.type, token);
         }
     }
   }
