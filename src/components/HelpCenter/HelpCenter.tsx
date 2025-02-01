@@ -2,7 +2,14 @@ import { useEffect, createContext, useContext, useState } from "react";
 import { useParams, Outlet, useLocation, Link } from "react-router";
 import { MagnifyingGlassIcon, CommandLineIcon } from "@heroicons/react/24/outline";
 import { useKnowledgeBaseStore } from "../../store";
-import { KnowledgeBase, Category, Article } from "../../types";
+import { KnowledgeBase, Category, Article, Customer } from "../../types";
+import supabase from "../../supabase";
+import ChatWidget from "../AvengersHotline/ChatWidget";
+
+interface UserInfo {
+  email: string;
+  fullName: string;
+}
 
 interface HelpCenterContextType {
   knowledgeBase: KnowledgeBase | null;
@@ -97,6 +104,144 @@ const HelpCenter = () => {
     fetchCategoriesByKnowledgeBaseId,
     fetchArticlesByKnowledgeBaseId,
   ]);
+
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+
+  useEffect(() => {
+    const savedUserInfo = localStorage.getItem('avengers_user_info');
+    if (savedUserInfo) {
+      setUserInfo(JSON.parse(savedUserInfo));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userInfo) {
+      const fetchCustomer = async () => {
+        const { data: customer, error } = await supabase
+          .from('customers')
+          .select(`
+            *,
+            conversations(
+              *,
+              messages(*)
+            )
+          `)
+          .eq('email', userInfo.email)
+          .eq('org_id', 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad')
+          .single();
+
+        if (!error && customer) {
+          setCustomer(customer);
+        }
+      };
+      fetchCustomer();
+    }
+  }, [userInfo]);
+
+  useEffect(() => {
+    if (customer) {
+      // Subscribe to new messages for all conversations
+      const messagesSubscription = supabase
+        .channel('customer-messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=in.(${customer.conversations?.map(conv => conv.id).join(',') || ''})`
+          },
+          async (payload) => {
+            const newMessage = payload.new;
+            
+            // Update the customer state with the new message
+            setCustomer(prevCustomer => {
+              if (!prevCustomer) return null;
+              
+              return {
+                ...prevCustomer,
+                conversations: prevCustomer.conversations?.map(conv => {
+                  if (conv.id === newMessage.conversation_id) {
+                    return {
+                      ...conv,
+                      messages: [...(conv.messages || []), newMessage]
+                    };
+                  }
+                  return conv;
+                })
+              };
+            });
+          }
+        )
+        .subscribe();
+
+      // Subscribe to new conversations for this customer
+      const conversationsSubscription = supabase
+        .channel('customer-conversations')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'conversations',
+            filter: `customer_id=eq.${customer.id}`
+          },
+          async (payload) => {
+            const newConversation = payload.new;
+            
+            // Fetch messages for the new conversation
+            const { data: messages } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', newConversation.id);
+            
+            // Update customer state with new conversation
+            setCustomer(prevCustomer => {
+              if (!prevCustomer) return null;
+              
+              return {
+                ...prevCustomer,
+                conversations: [
+                  ...(prevCustomer.conversations || []),
+                  { ...newConversation, messages: messages || [] }
+                ]
+              };
+            });
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions
+      return () => {
+        messagesSubscription.unsubscribe();
+        conversationsSubscription.unsubscribe();
+      };
+    }
+  }, [customer]);
+
+  const handleUserInfoSubmit = async (newUserInfo: UserInfo) => {
+    localStorage.setItem('avengers_user_info', JSON.stringify(newUserInfo));
+    const { data: newCustomer, error } = await supabase
+      .from('customers')
+      .upsert({
+        email: newUserInfo.email,
+        full_name: newUserInfo.fullName,
+        org_id: 'b6a0fc05-e31c-4b0d-a987-345c8b6e05ad'
+      })
+      .select()
+      .single();
+
+    if (!error && newCustomer) {
+      setCustomer(newCustomer);
+    }
+    setUserInfo(newUserInfo);
+
+    if (error) {
+      console.error('Error creating customer:', error);
+      return;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-base-100">
@@ -232,6 +377,11 @@ const HelpCenter = () => {
           <Outlet context={{ knowledgeBase, categories, articles }} />
         )}
       </main>
+      <ChatWidget 
+        userInfo={userInfo}
+        onUserInfoSubmit={handleUserInfoSubmit}
+        customer={customer}
+      />
       <footer className="border-t border-base-300/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center">

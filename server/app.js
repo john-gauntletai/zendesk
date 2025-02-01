@@ -12,7 +12,6 @@ const allowedOrigins = [
 // Middleware
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
@@ -21,18 +20,21 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials: true // Allow credentials (cookies, authorization headers, etc)
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
 // Auth middleware
 const authenticateUser = async (req, res, next) => {
-  const authHeader = req.headers['authorization']
-  if (!authHeader) return res.sendStatus(401)
+  const authHeader = req.headers['authorization'];
+  const token = req.query.token;
+  if (!authHeader && !token) return res.sendStatus(401)
 
-    try {
-    const { data: { user }, error } = await supabase.auth.getUser(authHeader.split(' ')[1]);
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(authHeader ? authHeader.split(' ')[1] : token);
     if (error) throw error
     req.user = user
     next()

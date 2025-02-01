@@ -2,6 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { PlusIcon, FolderIcon, DocumentTextIcon, EllipsisVerticalIcon, ArrowTopRightOnSquareIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { KnowledgeBase, Category, Article } from "../../types";
+import { useKnowledgeBaseStore } from "../../store";
 import ArticleFlyout from "./ArticleFlyout";
 import DeleteCategoryModal from "./DeleteCategoryModal";
 import DeleteArticleModal from "./DeleteArticleModal";
@@ -15,6 +16,7 @@ interface KnowledgeBaseCardProps {
   knowledgeBase: KnowledgeBase;
   categories: Category[];
   articles: Article[];
+  onOpenBuildWithAI: () => void;
 }
 
 const getPlainTextFromJson = (jsonString: string) => {
@@ -44,7 +46,8 @@ const getPlainTextFromJson = (jsonString: string) => {
   }
 };
 
-const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: KnowledgeBaseCardProps) => {
+const KnowledgeBaseCard = ({ knowledgeBase, categories, articles, onOpenBuildWithAI }: KnowledgeBaseCardProps) => {
+  const { generationStatus, generatingKbId } = useKnowledgeBaseStore();
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false);
   const [isArticleFlyoutOpen, setIsArticleFlyoutOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -54,11 +57,15 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBuildWithAIModalOpen, setIsBuildWithAIModalOpen] = useState(false);
-  const kbCategories = categories.filter((cat) => cat.knowledgebase_id === kb.id);
+  const kbCategories = categories.filter((cat) => cat.knowledgebase_id === knowledgeBase.id);
   const kbArticles = articles.filter(
     (article) =>
-      categories.find((c) => c.id === article.category_id)?.knowledgebase_id === kb.id
+      categories.find((c) => c.id === article.category_id)?.knowledgebase_id === knowledgeBase.id
   );
+
+  const isGenerating = generatingKbId === knowledgeBase.id && 
+    generationStatus && 
+    !['completed', 'error'].includes(generationStatus.status);
 
   const handleCreateCategory = () => {
     setIsCreateCategoryModalOpen(true);
@@ -76,17 +83,17 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
           <div className="flex items-center gap-4">
             <div 
               className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-              style={{ backgroundColor: `${kb.theme_color}20` }}
+              style={{ backgroundColor: `${knowledgeBase.theme_color}20` }}
             >
-              {kb.logo_url ? (
-                <img src={kb.logo_url} alt={kb.name} className="w-8 h-8" />
+              {knowledgeBase.logo_url ? (
+                <img src={knowledgeBase.logo_url} alt={knowledgeBase.name} className="w-8 h-8" />
               ) : (
                 "📚"
               )}
             </div>
             <div className="pr-4">
-              <h2 className="text-xl font-bold">{kb.name}</h2>
-              <p className="text-base-content/70">{kb.description}</p>
+              <h2 className="text-xl font-bold">{knowledgeBase.name}</h2>
+              <p className="text-base-content/70">{knowledgeBase.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -113,12 +120,22 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
             <button 
               className="btn btn-sm"
               onClick={() => setIsBuildWithAIModalOpen(true)}
+              disabled={isGenerating}
             >
-              <SparklesIcon className="w-4 h-4" />
-              Build with AI
+              {isGenerating ? (
+                <>
+                  <span className="loading loading-spinner loading-sm" />
+                  {generationStatus.message}
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="w-4 h-4" />
+                  Build with AI
+                </>
+              )}
             </button>
             <Link 
-              to={`/help/${kb.id}`}
+              to={`/help/${knowledgeBase.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-sm"
@@ -303,7 +320,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         isOpen={isCreateCategoryModalOpen}
         isNewCategory
         onClose={() => setIsCreateCategoryModalOpen(false)}
-        knowledgeBaseId={kb.id}
+        knowledgeBaseId={knowledgeBase.id}
       />
 
       {(isArticleFlyoutOpen || editingArticle) && (
@@ -315,7 +332,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
           }}
           isNewArticle={!editingArticle}
           article={editingArticle || undefined}
-          knowledgeBaseId={kb.id}
+          knowledgeBaseId={knowledgeBase.id}
           categories={kbCategories}
         />
       )}
@@ -325,7 +342,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
           isOpen={true}
           onClose={() => setEditingCategory(null)}
           category={editingCategory}
-          knowledgeBaseId={kb.id}
+          knowledgeBaseId={knowledgeBase.id}
         />
       )}
 
@@ -349,7 +366,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         <EditKnowledgeBaseModal
           isOpen={true}
           onClose={() => setIsEditModalOpen(false)}
-          knowledgeBase={kb}
+          knowledgeBase={knowledgeBase}
         />
       )}
 
@@ -357,7 +374,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         <DeleteKnowledgeBaseModal
           isOpen={true}
           onClose={() => setIsDeleteModalOpen(false)}
-          knowledgeBase={kb}
+          knowledgeBase={knowledgeBase}
         />
       )}
 
@@ -365,7 +382,7 @@ const KnowledgeBaseCard = ({ knowledgeBase: kb, categories, articles }: Knowledg
         <BuildWithAIModal
           isOpen={true}
           onClose={() => setIsBuildWithAIModalOpen(false)}
-          knowledgeBase={kb}
+          knowledgeBase={knowledgeBase}
         />
       )}
     </div>

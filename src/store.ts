@@ -87,7 +87,9 @@ interface KnowledgeBaseState {
   knowledgeBases: KnowledgeBase[];
   categories: Category[];
   articles: Article[];
-  generateCategoriesAndArticles: (kbId: string) => Promise<void>;
+  generationStatus: any;
+  generatingKbId: string | null;
+  generateCategoriesAndArticles: (kbId: string, {brandVoiceExample, additionalNotes}: {brandVoiceExample: string, additionalNotes: string}) => Promise<void>;
   fetchKnowledgeBases: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchArticles: () => Promise<void>;
@@ -476,19 +478,62 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set) => ({
   knowledgeBases: [],
   categories: [],
   articles: [],
+  generationStatus: null,
+  generatingKbId: null,
   generateCategoriesAndArticles: async (kbId: string, {brandVoiceExample, additionalNotes}: {brandVoiceExample: string, additionalNotes: string}) => {
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    set({ generatingKbId: kbId });
+    
+    try {
+      // First make the POST request to start the generation
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/knowledgebases/${kbId}/ai-generate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({brandVoiceExample, additionalNotes})
+      });
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/knowledgebases/${kbId}/ai-generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify({brandVoiceExample, additionalNotes})
-    });
-    const data = await response.json();
-    console.log(data);
+      if (!response.ok) {
+        throw new Error('Failed to start generation');
+      }
+
+      const { generationId } = await response.json();
+
+      // Then create EventSource with token and generationId in URL
+      const eventSource = new EventSource(
+        `${import.meta.env.VITE_API_URL}/api/knowledgebases/${kbId}/ai-generate/status?token=${session?.access_token}&generationId=${generationId}`
+      );
+
+      return new Promise((resolve, reject) => {
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          set({ generationStatus: data });
+          
+          if (data.status === 'completed' || data.status === 'error') {
+            eventSource.close();
+            set({ generatingKbId: null });
+            if (data.status === 'completed') {
+              resolve(data);
+            } else {
+              reject(new Error(data.message));
+            }
+          }
+        };
+
+        eventSource.onerror = (error) => {
+          console.error('EventSource error:', error);
+          eventSource.close();
+          set({ generatingKbId: null });
+          reject(error);
+        };
+      });
+    } catch (error) {
+      set({ generatingKbId: null });
+      throw error;
+    }
   },
   fetchKnowledgeBases: async (orgId: string) => {
     const { data, error } = await supabase.from("knowledgebases").select("*").eq("org_id", orgId);

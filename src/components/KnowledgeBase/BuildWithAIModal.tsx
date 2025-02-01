@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { KnowledgeBase } from "../../types";
 import { toast } from "react-hot-toast";
 import { useKnowledgeBaseStore } from "../../store";
@@ -15,7 +15,7 @@ const BuildWithAIModal = ({
   onClose,
   knowledgeBase,
 }: BuildWithAIModalProps) => {
-  const { generateCategoriesAndArticles } = useKnowledgeBaseStore();
+  const { generateCategoriesAndArticles, generationStatus } = useKnowledgeBaseStore();
   const [step, setStep] = useState<1 | 2>(1);
   const [brandVoiceExample, setBrandVoiceExample] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
@@ -30,7 +30,10 @@ const BuildWithAIModal = ({
     setIsSubmitting(true);
     try {
       await generateCategoriesAndArticles(knowledgeBase.id, {brandVoiceExample, additionalNotes});
-      toast.success("AI generation started");
+      toast.success(
+        "AI generation has started! You can close this window - the progress will be visible on the knowledge base card.", 
+        { duration: 6000 }
+      );
       onClose();
     } catch (error) {
       console.error("Error generating with AI:", error);
@@ -44,7 +47,14 @@ const BuildWithAIModal = ({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-2xl">
+      <div className="modal-box max-w-2xl relative">
+        <button 
+          className="btn btn-sm btn-ghost absolute right-2 top-2"
+          onClick={onClose}
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+
         {step === 1 ? (
           <div className="text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -132,6 +142,20 @@ const BuildWithAIModal = ({
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        )}
+
+        {isSubmitting && (
+          <div className="mt-4 p-4 bg-base-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <span className="loading loading-spinner" />
+              <div>
+                <p className="font-medium">{generationStatus?.message}</p>
+                <div className="text-sm text-base-content/70 mt-1">
+                  This will take several minutes. You can close this modal - the generation will continue in the background.
+                </div>
+              </div>
             </div>
           </div>
         )}
